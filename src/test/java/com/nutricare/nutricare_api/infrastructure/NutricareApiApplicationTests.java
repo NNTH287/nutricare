@@ -1,4 +1,4 @@
-package com.nutricare.nutricare_api;
+package com.nutricare.nutricare_api.infrastructure;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

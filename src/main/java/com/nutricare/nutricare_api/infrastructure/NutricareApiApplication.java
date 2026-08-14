@@ -1,4 +1,4 @@
-package com.nutricare.nutricare_api;
+package com.nutricare.nutricare_api.infrastructure;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

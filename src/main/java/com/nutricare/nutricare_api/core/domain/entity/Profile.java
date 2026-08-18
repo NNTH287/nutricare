@@ -26,7 +26,7 @@ public class Profile {
                                   LocalDate birthDate, double weightKg, double heightCm,
                                   ActivityLevel activityLevel, Set<String> conditions) {
         if (groupType == GroupType.PREGNANT) {
-            throw new InvalidProfileStateException("Use createPregnant() for a PREGNANT profile.");
+            throw new InvalidTrimesterException("Use createPregnant() for a PREGNANT profile.");
         }
         LocalDateTime now = LocalDateTime.now();
         return new Profile(null, userId, name, groupType, sexType, birthDate, weightKg, heightCm,
@@ -52,7 +52,7 @@ public class Profile {
     private Profile(Integer id, Integer userId, String name, GroupType groupType, SexType sexType,
                      LocalDate birthDate, double weightKg, double heightCm, ActivityLevel activityLevel,
                      Integer trimester, Set<String> conditions, LocalDateTime createdAt, LocalDateTime updatedAt) {
-        validateTrimester(groupType, trimester);
+        TrimesterPolicy.validate(groupType, trimester);
         this.id = id;
         this.userId = userId;
         this.name = name;
@@ -139,7 +139,7 @@ public class Profile {
     }
 
     public void setTrimester(int trimester) {
-        validateTrimester(this.groupType, trimester);
+        TrimesterPolicy.validate(groupType, trimester);
         this.trimester = trimester;
         touch();
     }
@@ -159,16 +159,6 @@ public class Profile {
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
-    }
-
-    private static void validateTrimester(GroupType groupType, Integer trimester) {
-        if (groupType == GroupType.PREGNANT) {
-            if (trimester == null || trimester < 1 || trimester > 3) {
-                throw new InvalidProfileStateException("Pregnant profile requires a trimester between 1 and 3!");
-            }
-        } else if (trimester != null) {
-            throw new InvalidProfileStateException("Only a 'PREGNANT' profile may have a trimester!");
-        }
     }
 
     private void touch() {

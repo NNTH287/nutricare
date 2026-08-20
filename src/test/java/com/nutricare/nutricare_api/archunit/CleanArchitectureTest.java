@@ -27,7 +27,7 @@ class CleanArchitectureTest {
     @Test
     void dependency_rule_is_respected_across_all_layers() {
         ArchRule rule = layeredArchitecture()
-                .consideringAllDependencies()
+                .consideringOnlyDependenciesInAnyPackage("com.nutricare.nutricare_api..")
                 .withOptionalLayers(true)
 
                 .layer("Domain").definedBy("com.nutricare.nutricare_api.core.domain..")

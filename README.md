@@ -50,35 +50,44 @@ records, selectable per calculation.
 ### Enums
 
 `GroupType`, `SexType` (`MALE`/`FEMALE`), `ActivityLevel` (`SEDENTARY` →
-`VERY_ACTIVE`), `MealSlot` (`BREAKFAST`/`LUNCH`/`DINNER`/`SNACK`),
-`MenuStatus` (`DRAFT`/`FINAL`).
+`VERY_ACTIVE`), `MealSlot` (`BREAKFAST`/`LUNCH`/`DINNER`/`SNACK`, shared by
+`menu_item` and `intake_entry`), `MenuStatus` (`DRAFT`/`FINAL`).
 
 ### Core tables
 
-| Table | Purpose | Notable design points |
-|---|---|---|
-| **`profile`** | A person's nutrition profile — the aggregate root candidate. | `user_id` is nullable from day one so a `User` entity can own multiple profiles later without a migration. Checks: `birth_date` or `age_in_months` required; `trimester` only valid 1–3 and only when `group_type = PREGNANT`. |
-| **`nutrition_standard`** | A selectable standard (`VN_NIN`, `WHO_FAO`, `US_DRI`, …). | `code` unique. |
-| **`nutrient`** | A nutrient definition (protein, iron, folate, …). | `unit` is the single source of truth for that nutrient's unit — not repeated on every requirement row. |
-| **`nutrient_requirement`** | The RDA/AI/UL for a `(standard, group_type, nutrient)` combination, optionally scoped by age band or trimester. | `recommended_value` and `max_value` (UL) are independent columns since a nutrient can have either or both. Unique index over the full lookup key prevents duplicate/ambiguous requirement rows. |
-| **`food_item`** | A food, with category, serving size, and tags (allergens, "suitable for infants 6m+", etc. — vocabulary enforced at the app layer). | |
-| **`food_nutrient`** | Nutrient composition per 100g for a food item. | Composite PK `(food_item_id, nutrient_id)`; indexed on `nutrient_id` for "find foods rich in X" queries. |
-| **`menu`** | A saved daily/weekly menu for a profile. | `label` supports non-date-scoped menus ("Week of Aug 10"). |
-| **`menu_item`** | A food + quantity within a menu, tagged by `meal_slot`. | |
-| **`calculation_result`** | A snapshot of a nutrient calculation run for a profile against a standard. | `nutrient_targets` stored as JSON since it's a computed snapshot, not queried directly. Indexed on `(profile_id, calculated_at)` for history lookups. |
+| Table                      | Purpose                                                                                                                             | Notable design points                                                                                                                                                                                                          |
+|----------------------------|-------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **`profile`**              | A person's nutrition profile — the aggregate root candidate.                                                                        | `user_id` is nullable from day one so a `User` entity can own multiple profiles later without a migration. Checks: `birth_date` or `age_in_months` required; `trimester` only valid 1–3 and only when `group_type = PREGNANT`. |
+| **`nutrition_standard`**   | A selectable standard (`VN_NIN`, `WHO_FAO`, `US_DRI`, …).                                                                           | `code` unique.                                                                                                                                                                                                                 |
+| **`nutrient`**             | A nutrient definition (protein, iron, folate, …).                                                                                   | `unit` is the single source of truth for that nutrient's unit — not repeated on every requirement row.                                                                                                                         |
+| **`nutrient_requirement`** | The RDA/AI/UL for a `(standard, group_type, nutrient)` combination, optionally scoped by age band or trimester.                     | `recommended_value` and `max_value` (UL) are independent columns since a nutrient can have either or both. Unique index over the full lookup key prevents duplicate/ambiguous requirement rows.                                |
+| **`food_item`**            | A food, with category, serving size, and tags (allergens, "suitable for infants 6m+", etc. — vocabulary enforced at the app layer). | `owner_profile_id` nullable: `NULL` = shared/global catalog item, set = private to that profile (e.g. a home-cooked dish not in the global catalog).                                                                           |
+| **`food_nutrient`**        | Nutrient composition per 100g for a food item.                                                                                      | Composite PK `(food_item_id, nutrient_id)`; indexed on `nutrient_id` for "find foods rich in X" queries.                                                                                                                       |
+| **`menu`**                 | A saved daily/weekly menu for a profile.                                                                                            | `label` supports non-date-scoped menus ("Week of Aug 10").                                                                                                                                                                     |
+| **`menu_item`**            | A food + quantity within a menu, tagged by `meal_slot`.                                                                             |                                                                                                                                                                                                                                |
+| **`calculation_result`**   | A snapshot of a nutrient calculation run for a profile against a standard.                                                          | `nutrient_targets` stored as JSON since it's a computed snapshot, not queried directly. Indexed on `(profile_id, calculated_at)` for history lookups.                                                                          |
+| **`intake_log`**           | What a profile actually ate on a given day — the intake-tracking aggregate root.                                                    | One per `(profile_id, log_date)`. Distinct from `menu`, which is a *plan*; this is a record of fact.                                                                                                                           |
+| **`intake_entry`**         | A food + quantity actually consumed within an `intake_log`, tagged by `meal_slot`.                                                  | Has its own surrogate id (unlike `menu_item`), since a diary must allow the same food logged twice in the same slot — `menu_item`'s `(food_item_id, meal_slot)` natural key can't express that multiplicity.                   |
 
 ### Relationships
 
 ```
 nutrition_standard ─< nutrient_requirement >─ nutrient
 food_item ─< food_nutrient >─ nutrient
+profile ─< food_item                     (owner_profile_id, private foods)
 profile ─< menu ─< menu_item >─ food_item
+profile ─< intake_log ─< intake_entry >─ food_item
 profile ─< calculation_result >─ nutrition_standard
 ```
 
-Only `Profile` is currently a confirmed aggregate root; `Menu`/`MenuItem`
-and `CalculationResult` reference it by ID rather than by object graph, so
-cross-aggregate consistency stays eventual, not embedded.
+Only `Profile` is currently a confirmed aggregate root; `Menu`/`MenuItem`,
+`IntakeLog`/`IntakeEntry`, and `CalculationResult` reference it by ID
+rather than by object graph, so cross-aggregate consistency stays
+eventual, not embedded. `IntakeLog` is deliberately its own aggregate
+rather than a status on `Menu` — a plan and a diary have different
+invariants (a plan has one item per meal slot; a diary must allow logging
+the same food twice in one slot), so they can't safely share `menu_item`'s
+identity rules.
 
 ## 4. Functional Modules
 
@@ -96,11 +105,19 @@ cross-aggregate consistency stays eventual, not embedded.
    targets under constraints (allergies, dislikes, budget, meal count,
    dietary preference); show generated-vs-target nutrient totals; allow
    manual swap/recalculate; save menus per profile.
-4. **Profile & History** — create/update profiles; store calculation
-   history and saved menus per profile, addressable by profile ID (no
-   login required yet — access is by ID/token, not a credentialed
-   account).
-5. **Reference/Config** — expose supported standards and reference tables
+4. **Intake Tracking** — log what a profile actually ate for a day
+   (`IntakeLog`/`IntakeEntry`), editable per entry (add/update
+   quantity-or-slot/remove); if food isn't in the catalog, add it as a
+   private `FoodItem` scoped to that profile instead of blocking the log
+   entry. v1 recommendation output is a simple per-nutrient gap report —
+   `CalculationResult`'s targets minus the day's consumed totals — not a
+   food-suggestion engine; that's a possible later addition once the gap
+   report ships.
+5. **Profile & History** — create/update profiles; store calculation
+   history, saved menus, and intake logs per profile, addressable by
+   profile ID (no login required yet — access is by ID/token, not a
+   credentialed account).
+6. **Reference/Config** — expose supported standards and reference tables
    (age bands, activity multipliers, trimester definitions) so a front-end
    can build correct forms.
 
@@ -137,6 +154,13 @@ POST   /api/v1/profiles/{id}/menus       Generate a menu suggestion
 GET    /api/v1/profiles/{id}/menus       List saved menus
 GET    /api/v1/menus/{id}                Get menu detail + nutrient totals
 PUT    /api/v1/menus/{id}/items/{itemId} Swap/edit a menu item
+
+POST   /api/v1/profiles/{id}/intake-logs             Create/get today's (or a given date's) intake log
+GET    /api/v1/profiles/{id}/intake-logs/{date}       Get a day's log + entries
+POST   /api/v1/intake-logs/{id}/entries               Add an entry (food + quantity + meal slot)
+PUT    /api/v1/intake-logs/{id}/entries/{entryId}      Update an entry's quantity or meal slot
+DELETE /api/v1/intake-logs/{id}/entries/{entryId}      Remove an entry
+GET    /api/v1/intake-logs/{id}/gap-report             Target vs. consumed per nutrient (planned)
 ```
 
 ## 7. Non-Functional Requirements
@@ -160,9 +184,15 @@ PUT    /api/v1/menus/{id}/items/{itemId} Swap/edit a menu item
 3. **Food Database** — CRUD, search/filter, seed from a public dataset.
 4. **Menu Engine** — start rule-based/greedy before anything
    optimization-based.
-5. **Multi-standard support** — add a second standard (WHO/FAO) to prove
+5. **Intake Tracking** — `IntakeLog`/`IntakeEntry` domain entities and
+   `FoodItem` private-ownership shipped; next up is the nutrient gap
+   report (`CalculationResult` targets vs. a day's consumed totals) as a
+   domain service, then the use-case/repository/controller layers for
+   both this and every other feature above (none of them have those
+   layers yet — the domain model has been built first, deliberately).
+6. **Multi-standard support** — add a second standard (WHO/FAO) to prove
    the config-driven design generalizes.
-6. **Auth** — introduce `User`, Spring Security + JWT, wire up the
+7. **Auth** — introduce `User`, Spring Security + JWT, wire up the
    reserved `userId`.
 
 ## 9. External Data Sources to Investigate

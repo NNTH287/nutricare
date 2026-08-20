@@ -11,8 +11,9 @@ public class FoodItem {
     private String category;
     private Double servingSizeG;
     private Set<String> tags;
+    private Integer ownerProfileId;
 
-    public FoodItem(String name, String category, Double servingSizeG, Set<String> tags) {
+    public FoodItem(String name, String category, Double servingSizeG, Set<String> tags, Integer ownerProfileId) {
         if(name == null || name.isBlank()) {
             throw new InvalidFoodItemException("name is required");
         }
@@ -23,6 +24,7 @@ public class FoodItem {
         this.category = category;
         this.servingSizeG = servingSizeG;
         this.tags = tags == null ? new HashSet<>() : new HashSet<>(tags);
+        this.ownerProfileId = ownerProfileId;
     }
 
     public Integer getId() {
@@ -65,6 +67,14 @@ public class FoodItem {
 
     public void setTags(Set<String> tags) {
         this.tags = tags == null ? new HashSet<>() : new HashSet<>(tags);
+    }
+
+    public Integer getOwnerProfileId() {
+        return ownerProfileId;
+    }
+
+    public boolean isVisibleTo(Integer profileId) {
+        return ownerProfileId == null || ownerProfileId.equals(profileId);
     }
 
     @Override

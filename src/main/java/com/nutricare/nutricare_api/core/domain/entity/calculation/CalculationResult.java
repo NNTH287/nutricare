@@ -1,4 +1,4 @@
-package com.nutricare.nutricare_api.core.domain.entity;
+package com.nutricare.nutricare_api.core.domain.entity.calculation;
 
 import java.time.LocalDateTime;
 import java.util.Collections;

@@ -1,9 +1,9 @@
-package com.nutricare.nutricare_api.core.domain.entity;
+package com.nutricare.nutricare_api.core.domain.entity.profile;
 
 public final class TrimesterPolicy {
     private TrimesterPolicy() {}
 
-    static void validate(GroupType groupType, Integer trimester) {
+    public static void validate(GroupType groupType, Integer trimester) {
         if(groupType == GroupType.PREGNANT) {
             if(trimester == null || trimester < 1 || trimester > 3) {
                 throw new InvalidTrimesterException("A PREGNANT group requires a trimester between 1 and 3.");

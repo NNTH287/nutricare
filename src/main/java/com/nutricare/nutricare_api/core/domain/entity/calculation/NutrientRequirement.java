@@ -1,4 +1,8 @@
-package com.nutricare.nutricare_api.core.domain.entity;
+package com.nutricare.nutricare_api.core.domain.entity.calculation;
+
+import com.nutricare.nutricare_api.core.domain.entity.profile.InvalidTrimesterException;
+import com.nutricare.nutricare_api.core.domain.entity.profile.TrimesterPolicy;
+import com.nutricare.nutricare_api.core.domain.entity.profile.GroupType;
 
 import java.util.Objects;
 

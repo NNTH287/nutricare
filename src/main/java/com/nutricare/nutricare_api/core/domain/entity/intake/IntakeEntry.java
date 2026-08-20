@@ -1,4 +1,6 @@
-package com.nutricare.nutricare_api.core.domain.entity;
+package com.nutricare.nutricare_api.core.domain.entity.intake;
+
+import com.nutricare.nutricare_api.core.domain.entity.menu.MealSlot;
 
 import java.util.Objects;
 

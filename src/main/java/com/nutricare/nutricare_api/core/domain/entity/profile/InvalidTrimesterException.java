@@ -1,4 +1,4 @@
-package com.nutricare.nutricare_api.core.domain.entity;
+package com.nutricare.nutricare_api.core.domain.entity.profile;
 
 public class InvalidTrimesterException extends RuntimeException {
     public InvalidTrimesterException(String message) {

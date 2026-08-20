@@ -1,4 +1,4 @@
-package com.nutricare.nutricare_api.core.domain.entity;
+package com.nutricare.nutricare_api.core.domain.entity.menu;
 
 import java.util.Objects;
 
@@ -7,7 +7,7 @@ public class MenuItem {
     private MealSlot mealSlot;
     private Double quantityG;
 
-    public MenuItem(Integer foodItemId, MealSlot mealSlot, Double quantityG) {
+    MenuItem(Integer foodItemId, MealSlot mealSlot, Double quantityG) {
         if(quantityG == null || quantityG <= 0) {
             throw new InvalidMenuItemException("quantityG must be positive");
         }

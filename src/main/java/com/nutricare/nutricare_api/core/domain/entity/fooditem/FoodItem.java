@@ -1,4 +1,4 @@
-package com.nutricare.nutricare_api.core.domain.entity;
+package com.nutricare.nutricare_api.core.domain.entity.fooditem;
 
 import java.util.Collections;
 import java.util.HashSet;

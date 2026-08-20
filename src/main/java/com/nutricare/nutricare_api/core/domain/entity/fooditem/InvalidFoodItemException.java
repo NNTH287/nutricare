@@ -1,4 +1,4 @@
-package com.nutricare.nutricare_api.core.domain.entity;
+package com.nutricare.nutricare_api.core.domain.entity.fooditem;
 
 public class InvalidFoodItemException extends RuntimeException {
     public InvalidFoodItemException(String message) {

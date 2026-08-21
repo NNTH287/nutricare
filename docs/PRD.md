@@ -64,7 +64,40 @@ covers product scope; those docs cover implementation structure.
 
 ## Use Cases
 
-_TBD_
+### UC01: Calculate nutrient need for one day
+**Actor**: User
+</br>
+**Precondition**: An existing saved `Profile` for the person the calculation is for.
+</br>
+**Goal**: Get nutrient (micro, macro) needs for a saved profile under a chosen nutrition standard.
+</br>
+**Flow**:
+1. User selects an existing saved `Profile` (ad-hoc calculation without a saved profile is not supported — `CalculationResult` requires a `profileId`).
+2. User selects a `NutritionStandard` (e.g. Vietnam NIN, WHO/FAO, US DRI) to calculate against.
+3. User requests calculation.
+4. The system calculates calorie and nutrient targets for the profile against the selected standard. If the standard has no matching `NutrientRequirement` data for the profile's group/age-band/trimester for a given nutrient, that nutrient is omitted from the result and flagged as unresolved rather than failing the whole calculation.
+5. The system responds with the calculation result: calorie target, resolved nutrient targets, and the list of any flagged/unresolved nutrients.
+6. User chooses to save the result or not.
+   - If saved, it is persisted as a `CalculationResult` and becomes retrievable via UC02.
+   - If not saved, it is discarded immediately after the response and cannot be retrieved again without recalculating.
+
+**Outcome**: User obtains a nutrient-needs calculation for their profile under a chosen standard, with any data gaps explicitly flagged, and optionally persists it to their calculation history.
+
+### UC02: Browse nutrient calculation history
+**Actor**: User
+</br>
+**Precondition**: An existing saved `Profile` (`profileId`) whose history is being browsed.
+</br>
+**Goal**: Browse and view the details of a specific profile's past saved calculations.
+</br>
+**Flow**:
+1. User enters the calculation history view for a given `profileId`.
+2. The system lists that profile's saved `CalculationResult`s (e.g. newest first). Filtering, pagination, and retention limits are out of scope for v1.
+3. User selects a specific result from the list.
+4. The system retrieves that result and displays it exactly as it was calculated — calorie target, `calculatedAt`, standard used, and nutrient targets — as a frozen snapshot, not recomputed against current standard data (a standard's reference values may change after the calculation was saved).
+5. User views the chosen result's details.
+
+**Outcome**: User can browse a profile's saved calculation history and view the exact, unmodified snapshot of any past result.
 
 ## Constraints & Limitations
 

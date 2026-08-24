@@ -15,15 +15,15 @@ those needs.
 
 ## 1. Tech Stack
 
-| Concern | Choice |
-|---|---|
-| Language / runtime | Java 21 |
-| Framework | Spring Boot 4.0.7 (Data JPA, Validation, Flyway, HATEOAS, WebMVC) |
-| Database | PostgreSQL (runtime), H2 (tests) |
-| API docs | springdoc-openapi (OpenAPI/Swagger, auto-generated) |
-| Testing | JUnit 5, AssertJ, Mockito, ArchUnit 1.5.0 (architecture enforcement) |
-| Validation | Bean Validation (`jakarta.validation`) |
-| Auth | **Not in v1** — see [§6](#6-authentication-v1-scope) |
+| Concern            | Choice                                                               |
+|--------------------|----------------------------------------------------------------------|
+| Language / runtime | Java 21                                                              |
+| Framework          | Spring Boot 4.0.7 (Data JPA, Validation, Flyway, HATEOAS, WebMVC)    |
+| Database           | PostgreSQL (runtime), H2 (tests)                                     |
+| API docs           | springdoc-openapi (OpenAPI/Swagger, auto-generated)                  |
+| Testing            | JUnit 5, AssertJ, Mockito, ArchUnit 1.5.0 (architecture enforcement) |
+| Validation         | Bean Validation (`jakarta.validation`)                               |
+| Auth               | **Not in v1** — see [§5](#5-authentication-v1-scope)                 |
 
 ## 2. Target Profile Types
 
@@ -31,15 +31,15 @@ Each group has distinct inputs and calculation rules, so the domain models
 them as a single `Profile` entity distinguished by `GroupType`, rather than
 one calculator per type:
 
-| GroupType | Key inputs |
-|---|---|
-| `ADULT` (male/female) | age, weight, height, activity level |
-| `PREGNANT` | trimester (1–3), pre-pregnancy weight, activity level |
-| `BREASTFEEDING` | months postpartum, single/multiple infants |
-| `INFANT` (0–12 months) | age in months, weight, feeding type (breast/formula/mixed) |
-| `CHILD` (1–18 years) | age, weight, height, growth stage, activity level |
-| `ELDERLY` | age, weight, height, activity/health condition |
-| Special condition *(later)* | diabetes, hypertension, allergies, etc. |
+| GroupType                   | Key inputs                                                 |
+|-----------------------------|------------------------------------------------------------|
+| `ADULT` (male/female)       | age, weight, height, activity level                        |
+| `PREGNANT`                  | trimester (1–3), pre-pregnancy weight, activity level      |
+| `BREASTFEEDING`             | months postpartum, single/multiple infants                 |
+| `INFANT` (0–12 months)      | age in months, weight, feeding type (breast/formula/mixed) |
+| `CHILD` (1–18 years)        | age, weight, height, growth stage, activity level          |
+| `ELDERLY`                   | age, weight, height, activity/health condition             |
+| Special condition *(later)* | diabetes, hypertension, allergies, etc.                    |
 
 **Nutrition standards are configurable**, not hardcoded to one country:
 Vietnam NIN, WHO/FAO, and US DRI are all first-class `NutritionStandard`
@@ -121,14 +121,14 @@ identity rules.
    (age bands, activity multipliers, trimester definitions) so a front-end
    can build correct forms.
 
-## 5. Authentication (v1 scope) {#6-authentication-v1-scope}
+## 5. Authentication (v1 scope)
 
 **v1 ships without authentication.** The data model is still shaped so
 auth can be added later without restructuring:
 
 - `profile.user_id` is nullable from the start.
 - Access in v1 is by profile ID/issued token, not a credentialed account.
-- Planned follow-up (see [Roadmap](#7-roadmap)): introduce a `User`
+- Planned follow-up (see [Roadmap](#8-roadmap)): introduce a `User`
   entity + Spring Security/JWT, tie existing profiles to accounts via the
   already-reserved `userId`, and role-gate the currently-open food-CRUD
   admin endpoints.

@@ -2,6 +2,7 @@ package com.nutricare.nutricare_api.core.domain.entity.profile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
@@ -105,6 +106,10 @@ public class Profile {
     public void setBirthDate(LocalDate birthDate) {
         this.birthDate = birthDate;
         touch();
+    }
+
+    public int getAgeInMonths() {
+        return (int) ChronoUnit.MONTHS.between(birthDate, LocalDate.now());
     }
 
     public double getWeightKg() {

@@ -1,6 +1,7 @@
 package com.nutricare.nutricare_api.core.domain.entity.calculation;
 
 import com.nutricare.nutricare_api.core.domain.entity.profile.InvalidTrimesterException;
+import com.nutricare.nutricare_api.core.domain.entity.profile.Profile;
 import com.nutricare.nutricare_api.core.domain.entity.profile.TrimesterPolicy;
 import com.nutricare.nutricare_api.core.domain.entity.profile.GroupType;
 
@@ -55,6 +56,18 @@ public class NutrientRequirement {
         this.trimester = trimester;
         this.recommendedVal = recommendedVal;
         this.maxVal = maxVal;
+    }
+
+    public boolean matches(Profile profile) {
+        if(this.groupType != profile.getGroupType()) {
+            return false;
+        } else if (profile.getAgeInMonths() < this.ageMonthsMin || profile.getAgeInMonths() > this.getAgeMonthsMax()) {
+            return false;
+        } else if (!Objects.equals(trimester, profile.getTrimester())) {
+            return false;
+        }
+
+        return true;
     }
 
     public Integer getId() {

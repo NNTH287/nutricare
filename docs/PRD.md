@@ -101,7 +101,7 @@ covers product scope; those docs cover implementation structure.
 
 ## Constraints & Limitations
 
-_TBD_
+- **UC01 does not refine targets by health condition (allergy, hypertension, diabetes, etc.) in v1.** `Profile.conditions` exists, but no condition→nutrient adjustment rule set is defined yet — deferring until that rule model (which condition adjusts which nutrient, by how much, sourced from where) is designed as its own use case. Allergy specifically belongs to food selection/intake logging, not nutrient-target calculation, and is out of scope for this use case regardless.
 
 ## Risks & Mitigation
 

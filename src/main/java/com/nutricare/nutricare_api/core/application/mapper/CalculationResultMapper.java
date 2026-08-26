@@ -31,13 +31,13 @@ public class CalculationResultMapper {
 
     private Set<String> convertUnresolvedNutrientIds(Set<Integer> nutrientIds) {
         return nutrientIds.stream()
-                .map(nutrientRepository::getById)
+                .map(id -> nutrientRepository.findById(id).orElseThrow())
                 .map(Nutrient::getName)
                 .collect(Collectors.toUnmodifiableSet());
     }
 
     private NutrientTargetResult convertFromNutrientTarget(NutrientTarget target) {
-        Nutrient nutrient = nutrientRepository.getById(target.getNutrientId());
+        Nutrient nutrient = nutrientRepository.findById(target.getNutrientId()).orElseThrow();
         Double convertedAmount = target.getTargetAmountG();
         //TODO: convert amount to nutrient's unit
 

@@ -99,9 +99,26 @@ covers product scope; those docs cover implementation structure.
 
 **Outcome**: User can browse a profile's saved calculation history and view the exact, unmodified snapshot of any past result.
 
+### UC03: Manage nutrient database
+**Actor**: Admin
+</br>
+**Precondition**: None to create; an existing `Nutrient` (by `id`) to view, update, or delete.
+</br>
+**Goal**: Admin maintains the shared reference list of nutrients (e.g. vitamin A, Iron, Protein) that `NutrientRequirement`s and `FoodNutrient` composition values are defined against.
+</br>
+**Flow**:
+1. **Create**: Admin submits a new nutrient's `code`, `name`, and `unit`. The system rejects the request if a nutrient with that `code` already exists — `code` is the unique business key across the nutrient database.
+2. **View**: Admin looks up a nutrient by `id`.
+3. **Update**: Admin submits changes to an existing nutrient's `code`, `name`, and/or `unit`. If the update would change `code` to a value already used by another nutrient, the system rejects it.
+4. **Delete**: Admin removes a nutrient by `id`.
+
+**Outcome**: Admin can create, view, update, and delete nutrients in the reference database, with `code` uniqueness enforced on both create and update.
+
 ## Constraints & Limitations
 
 - **UC01 does not refine targets by health condition (allergy, hypertension, diabetes, etc.) in v1.** `Profile.conditions` exists, but no condition→nutrient adjustment rule set is defined yet — deferring until that rule model (which condition adjusts which nutrient, by how much, sourced from where) is designed as its own use case. Allergy specifically belongs to food selection/intake logging, not nutrient-target calculation, and is out of scope for this use case regardless.
+
+- **UC03 delete does not check whether a `Nutrient` is still referenced by a `NutrientRequirement` or `FoodNutrient` composition value.** Deleting a referenced nutrient can orphan those records. Deferred because neither of those aggregates exists in the codebase yet, and enforcing the check now would mean expanding the `Nutrient` aggregate's boundary to know about consumers outside it — revisit once those aggregates exist, via a domain event or an existence check at that boundary, not by pulling the check into `Nutrient` itself.
 
 ## Risks & Mitigation
 

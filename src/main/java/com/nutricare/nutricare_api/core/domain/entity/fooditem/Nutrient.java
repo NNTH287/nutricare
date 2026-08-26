@@ -8,7 +8,18 @@ public class Nutrient {
     private String name;
     private String unit;
 
-    public Nutrient(Integer id, String code, String name, String unit) {
+    public static Nutrient create(String code, String name, String unit) {
+        return new Nutrient(null, code, name, unit);
+    }
+
+    public static Nutrient reconstitute(Integer id, String code, String name, String unit) {
+        return new Nutrient(id, code, name, unit);
+    }
+
+    private Nutrient(Integer id, String code, String name, String unit) {
+        validateCode(code);
+        validateName(name);
+        validateUnit(unit);
         this.id = id;
         this.code = code;
         this.name = name;
@@ -24,6 +35,7 @@ public class Nutrient {
     }
 
     public void setCode(String code) {
+        validateCode(code);
         this.code = code;
     }
 
@@ -32,6 +44,7 @@ public class Nutrient {
     }
 
     public void setName(String name) {
+        validateName(name);
         this.name = name;
     }
 
@@ -40,7 +53,26 @@ public class Nutrient {
     }
 
     public void setUnit(String unit) {
+        validateUnit(unit);
         this.unit = unit;
+    }
+
+    private static void validateCode(String code) {
+        if (code == null || code.isBlank()) {
+            throw new InvalidNutrientException("code is required");
+        }
+    }
+
+    private static void validateName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new InvalidNutrientException("name is required");
+        }
+    }
+
+    private static void validateUnit(String unit) {
+        if (unit == null || unit.isBlank()) {
+            throw new InvalidNutrientException("unit is required");
+        }
     }
 
     @Override

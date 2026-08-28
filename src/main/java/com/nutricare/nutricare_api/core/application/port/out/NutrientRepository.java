@@ -11,5 +11,5 @@ public interface NutrientRepository {
 
     Nutrient save(Nutrient nutrient);
 
-    int deleteById(Integer id);
+    void deleteById(Integer id);
 }

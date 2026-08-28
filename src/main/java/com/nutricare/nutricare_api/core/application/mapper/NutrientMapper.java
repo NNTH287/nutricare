@@ -10,6 +10,6 @@ public class NutrientMapper {
     }
 
     public NutrientResult toResult(Nutrient nutrient) {
-        return new NutrientResult(nutrient.getCode(), nutrient.getName(), nutrient.getUnit());
+        return new NutrientResult(nutrient.getId(), nutrient.getCode(), nutrient.getName(), nutrient.getUnit());
     }
 }

@@ -10,5 +10,5 @@ public interface ManageNutrientUseCase {
     Optional<NutrientResult> findById(Integer id);
     NutrientResult save(CreateNutrientCommand command);
     NutrientResult update(UpdateNutrientCommand command);
-    int deleteById(Integer id);
+    void deleteById(Integer id);
 }

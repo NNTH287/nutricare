@@ -51,7 +51,7 @@ public class ManageNutrientService implements ManageNutrientUseCase {
     }
 
     @Override
-    public int deleteById(Integer id) {
-        return nutrientRepository.deleteById(id);
+    public void deleteById(Integer id) {
+        nutrientRepository.deleteById(id);
     }
 }

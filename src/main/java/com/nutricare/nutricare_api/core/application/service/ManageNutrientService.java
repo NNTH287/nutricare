@@ -26,12 +26,12 @@ public class ManageNutrientService implements ManageNutrientUseCase {
     }
 
     @Override
-    public Integer save(CreateNutrientCommand command) {
+    public NutrientResult save(CreateNutrientCommand command) {
         if(nutrientRepository.existsCode(command.code())) {
             throw new InvalidNutrientException("code is existed");
         }
 
-        return nutrientRepository.save(mapper.fromCreateCommandToDomain(command)).getId();
+        return mapper.toResult(nutrientRepository.save(mapper.fromCreateCommandToDomain(command)));
     }
 
     @Override

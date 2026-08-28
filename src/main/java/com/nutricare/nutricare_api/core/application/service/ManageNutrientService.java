@@ -1,6 +1,7 @@
 package com.nutricare.nutricare_api.core.application.service;
 
 import com.nutricare.nutricare_api.core.application.dto.CreateNutrientCommand;
+import com.nutricare.nutricare_api.core.application.dto.NutrientResult;
 import com.nutricare.nutricare_api.core.application.dto.UpdateNutrientCommand;
 import com.nutricare.nutricare_api.core.application.mapper.NutrientMapper;
 import com.nutricare.nutricare_api.core.application.port.in.ManageNutrientUseCase;
@@ -20,8 +21,8 @@ public class ManageNutrientService implements ManageNutrientUseCase {
     }
 
     @Override
-    public Optional<Nutrient> findById(Integer id) {
-        return nutrientRepository.findById(id);
+    public Optional<NutrientResult> findById(Integer id) {
+        return nutrientRepository.findById(id).map(mapper::toResult);
     }
 
     @Override
@@ -34,7 +35,7 @@ public class ManageNutrientService implements ManageNutrientUseCase {
     }
 
     @Override
-    public Nutrient update(UpdateNutrientCommand command) {
+    public NutrientResult update(UpdateNutrientCommand command) {
         Nutrient updatedEntity = nutrientRepository.findById(command.id()).orElseThrow();
 
         if (!command.code().equals(updatedEntity.getCode()) && nutrientRepository.existsCode(command.code())) {
@@ -46,7 +47,7 @@ public class ManageNutrientService implements ManageNutrientUseCase {
         updatedEntity.setUnit(command.unit());
         updatedEntity = nutrientRepository.save(updatedEntity);
 
-        return updatedEntity;
+        return mapper.toResult(updatedEntity);
     }
 
     @Override

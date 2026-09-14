@@ -17,7 +17,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/food-items")
+@RequestMapping("/api/foods")
 @RequiredArgsConstructor
 public class FoodItemController {
     private final ManageFoodItemUseCase useCase;

@@ -35,21 +35,21 @@ public class ManageFoodItemService implements ManageFoodItemUseCase {
     }
 
     @Override
-    public FoodItemResult create(CreateFoodItemCommand command) {
+    public FoodItemDetailsResult create(CreateFoodItemCommand command) {
         FoodItem foodItem = FoodItem.create(command.name(), command.category(), command.servingSizeG(),
                 command.tags(), command.ownerProfileId(), mapper.fromInputsToDomain(command.nutrients()));
-        return mapper.toResult(foodItemRepository.save(foodItem));
+        return mapper.toDetails(foodItemRepository.save(foodItem));
     }
 
     @Override
-    public FoodItemResult update(UpdateFoodItemCommand command) {
+    public FoodItemDetailsResult update(UpdateFoodItemCommand command) {
         FoodItem foodItem = foodItemRepository.findById(command.id()).orElseThrow();
         foodItem.setName(command.name());
         foodItem.setCategory(command.category());
         foodItem.setServingSizeG(command.servingSizeG());
         foodItem.setTags(command.tags());
         foodItem.replaceNutrients(mapper.fromInputsToDomain(command.nutrients()));
-        return mapper.toResult(foodItemRepository.save(foodItem));
+        return mapper.toDetails(foodItemRepository.save(foodItem));
     }
 
     @Override

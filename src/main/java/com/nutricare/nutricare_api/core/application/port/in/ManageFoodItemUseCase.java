@@ -8,7 +8,7 @@ import java.util.Optional;
 public interface ManageFoodItemUseCase {
     List<FoodItemResult> getFoodItems(int pageIndex, int pageSize);
     Optional<FoodItemDetailsResult> findById(Integer id);
-    FoodItemResult create(CreateFoodItemCommand command);
-    FoodItemResult update(UpdateFoodItemCommand command);
+    FoodItemDetailsResult create(CreateFoodItemCommand command);
+    FoodItemDetailsResult update(UpdateFoodItemCommand command);
     void deleteById(Integer id);
 }

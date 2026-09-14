@@ -131,6 +131,44 @@ covers product scope; those docs cover implementation structure.
 
 **Outcome**: The system maintains a food composition database — shared or personal — with each food item's nutrient makeup validated for positive amounts and no duplicate nutrients, ready to back future intake-tracking and food-search use cases.
 
+### UC05: Log daily intake
+**Actor**: User
+</br>
+**Precondition**: An existing saved `Profile` for the person whose intake is being logged. The food being logged must already exist in the food composition database (UC04) — either the shared catalog or that profile's own private items.
+</br>
+**Goal**: Record what a profile actually ate on a given day, by meal slot, as the factual counterpart to a planned menu.
+</br>
+**Flow**:
+1. User selects a saved `Profile` and a date. If that profile has no intake log for the date yet, the system creates one; otherwise the existing log for that date is returned. A profile has at most one log per date.
+2. **Add an entry**: User submits a food (by `id`), a quantity, and a meal slot (e.g. breakfast, lunch, dinner, snack) to add to the day's log. Unlike a saved menu, the same food can be logged more than once in the same meal slot (e.g. two snacks), so entries are not deduplicated by food-and-slot.
+3. **Food not in the catalog**: If the food someone ate isn't already in the database, the user adds it as a new private `FoodItem` scoped to their own profile (per UC04's create flow) instead of the log entry being blocked.
+4. **View**: User retrieves a day's log and sees all its entries — food, quantity, and meal slot.
+5. **Update an entry**: User changes an existing entry's quantity and/or meal slot.
+6. **Remove an entry**: User deletes an existing entry from the day's log.
+
+**Outcome**: The system maintains a per-day, per-profile diary of actual food intake, editable entry-by-entry, ready to be compared against the profile's nutrient targets in UC06.
+
+### UC06: Daily intake gap report and supplement recommendation
+**Actor**: User
+</br>
+**Precondition**: An existing saved `Profile`; a day logged via UC05 with at least one entry; nutrient targets for that profile resolvable under a chosen standard using the same target-resolution logic as UC01.
+</br>
+**Goal**: See how a day's actual eating compares against the profile's nutrient targets, with shortfalls and over-intake called out, without re-deriving how those targets are resolved.
+</br>
+**Flow**:
+1. User selects an existing saved `Profile`, a logged day, and a `NutritionStandard` to compare against.
+2. The system totals that day's nutrient intake by combining each logged entry's quantity with its food's per-100g composition.
+3. The system resolves that profile's nutrient targets for the selected standard using the same resolution rules as UC01 (by group, age band or trimester, and standard).
+4. The system compares the day's totals against the resolved targets, nutrient by nutrient:
+   - Below the recommended target: flagged as a shortfall, with the amount still needed to reach the target.
+   - Above the maximum safe amount (the standard's UL, when one is defined for that nutrient): flagged as an over-intake warning.
+   - Within range: recorded as no action needed.
+   - Left unresolved by UC01's target resolution (no matching requirement data): excluded from the shortfall/over-intake comparison and separately listed as not evaluable, rather than silently treated as met.
+5. The system responds with the full gap report: per-nutrient status, shortfall/over-intake amounts where applicable, and the list of any not-evaluable nutrients.
+6. User views the report.
+
+**Outcome**: User sees a per-nutrient gap report for a logged day — what's short, what's over the safe maximum, and what's on target.
+
 ## Constraints & Limitations
 
 - **UC01 does not refine targets by health condition (allergy, hypertension, diabetes, etc.) in v1.** `Profile.conditions` exists, but no condition→nutrient adjustment rule set is defined yet — deferring until that rule model (which condition adjusts which nutrient, by how much, sourced from where) is designed as its own use case. Allergy specifically belongs to food selection/intake logging, not nutrient-target calculation, and is out of scope for this use case regardless.
@@ -138,6 +176,8 @@ covers product scope; those docs cover implementation structure.
 - **UC03 delete does not check whether a `Nutrient` is still referenced by a `NutrientRequirement` or `FoodNutrient` composition value.** Deleting a referenced nutrient can orphan those records. Deferred because neither of those aggregates exists in the codebase yet, and enforcing the check now would mean expanding the `Nutrient` aggregate's boundary to know about consumers outside it — revisit once those aggregates exist, via a domain event or an existence check at that boundary, not by pulling the check into `Nutrient` itself.
 
 - **UC04 delete does not check whether a `FoodItem` is still referenced.
+
+- **UC06 does not generate specific food or supplement suggestions in v1.** The gap report surfaces the shortfall/over-intake amount per nutrient, not a recommended food or supplement to close it — that's a possible later addition once the gap report itself has shipped and been validated.
 
 ## Risks & Mitigation
 

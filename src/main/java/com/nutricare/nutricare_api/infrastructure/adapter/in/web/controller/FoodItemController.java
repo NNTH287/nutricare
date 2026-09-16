@@ -25,7 +25,7 @@ public class FoodItemController {
 
     @GetMapping()
     public ResponseEntity<ApiResponse<List<FoodItemResponse>>> listFoodItem(@RequestParam Integer pageIndex, @RequestParam Integer pageSize) {
-        return ApiResponse.ok(mapper.toResponseList(useCase.getFoodItems(pageIndex, pageSize)));
+        return ApiResponse.ok(mapper.toResponseList(useCase.list(pageIndex, pageSize)));
     }
 
     @GetMapping("/{id}")

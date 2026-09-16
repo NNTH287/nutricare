@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ManageFoodItemUseCase {
-    List<FoodItemResult> getFoodItems(int pageIndex, int pageSize);
+    List<FoodItemResult> list(int pageIndex, int pageSize);
     Optional<FoodItemDetailsResult> findById(Integer id);
     FoodItemDetailsResult create(CreateFoodItemCommand command);
     FoodItemDetailsResult update(UpdateFoodItemCommand command);

@@ -28,7 +28,7 @@ public class NutrientController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<NutrientResponse>> createNutrient(@RequestBody CreateNutrientRequest req) {
-        NutrientResult savedNutrient = useCase.save(mapper.toCreateCommand(req));
+        NutrientResult savedNutrient = useCase.create(mapper.toCreateCommand(req));
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .path("/{id}")

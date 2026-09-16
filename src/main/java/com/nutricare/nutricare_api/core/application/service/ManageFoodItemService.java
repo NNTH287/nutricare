@@ -23,7 +23,7 @@ public class ManageFoodItemService implements ManageFoodItemUseCase {
     }
 
     @Override
-    public List<FoodItemResult> getFoodItems(int pageIndex, int pageSize) {
+    public List<FoodItemResult> list(int pageIndex, int pageSize) {
         return foodItemRepository.findAll(pageIndex, pageSize).stream()
                 .map(mapper::toResult)
                 .toList();

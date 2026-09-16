@@ -8,7 +8,7 @@ import java.util.Optional;
 
 public interface ManageNutrientUseCase {
     Optional<NutrientResult> findById(Integer id);
-    NutrientResult save(CreateNutrientCommand command);
+    NutrientResult create(CreateNutrientCommand command);
     NutrientResult update(UpdateNutrientCommand command);
     void deleteById(Integer id);
 }

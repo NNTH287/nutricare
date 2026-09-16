@@ -58,18 +58,18 @@ public class IntakeLog {
     }
 
     public void updateEntryMealSlot(Integer entryId, MealSlot mealSlot) {
-        findEntry(entryId).setMealSlot(mealSlot);
+        getEntry(entryId).setMealSlot(mealSlot);
     }
 
     public void updateEntryQuantity(Integer entryId, Double newQuantityG) {
-        findEntry(entryId).setQuantityG(newQuantityG);
+        getEntry(entryId).setQuantityG(newQuantityG);
     }
 
     public void removeEntry(Integer entryId) {
-        entries.remove(findEntry(entryId));
+        entries.remove(getEntry(entryId));
     }
 
-    private IntakeEntry findEntry(Integer entryId) {
+    public IntakeEntry getEntry(Integer entryId) {
         return entries.stream()
                 .filter(e -> Objects.equals(e.getId(), entryId))
                 .findFirst()

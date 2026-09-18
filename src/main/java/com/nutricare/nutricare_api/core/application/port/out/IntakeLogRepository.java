@@ -2,13 +2,14 @@ package com.nutricare.nutricare_api.core.application.port.out;
 
 import com.nutricare.nutricare_api.core.domain.entity.intake.IntakeEntry;
 import com.nutricare.nutricare_api.core.domain.entity.intake.IntakeLog;
+import com.nutricare.nutricare_api.core.domain.entity.intake.IntakeLogHeader;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 public interface IntakeLogRepository {
-    List<IntakeLog> findAllByProfileId(Integer profileId, int pageIndex, int pageSize);
+    List<IntakeLogHeader> findAllByProfileId(Integer profileId, int pageIndex, int pageSize);
 
     Optional<IntakeLog> findById(Integer id);
 

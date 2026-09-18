@@ -1,9 +1,6 @@
 package com.nutricare.nutricare_api.core.application.service;
 
-import com.nutricare.nutricare_api.core.application.dto.CreateIntakeEntryCommand;
-import com.nutricare.nutricare_api.core.application.dto.IntakeEntryResult;
-import com.nutricare.nutricare_api.core.application.dto.IntakeLogResult;
-import com.nutricare.nutricare_api.core.application.dto.UpdateIntakeEntryCommand;
+import com.nutricare.nutricare_api.core.application.dto.*;
 import com.nutricare.nutricare_api.core.application.mapper.IntakeLoggingMapper;
 import com.nutricare.nutricare_api.core.application.port.in.LogIntakeUseCase;
 import com.nutricare.nutricare_api.core.application.port.out.IntakeLogRepository;
@@ -12,7 +9,6 @@ import com.nutricare.nutricare_api.core.domain.entity.intake.IntakeLog;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 public class LogIntakeService implements LogIntakeUseCase {
@@ -25,8 +21,8 @@ public class LogIntakeService implements LogIntakeUseCase {
     }
 
     @Override
-    public List<IntakeLogResult> listLogs(Integer profileId, int pageIndex, int pageSize) {
-        return mapper.toListLogsResult(intakeLogRepository.findAllByProfileId(profileId, pageIndex, pageSize));
+    public List<IntakeLogHeaderResult> listLogs(Integer profileId, int pageIndex, int pageSize) {
+        return mapper.toListLogsHeaderResult(intakeLogRepository.findAllByProfileId(profileId, pageIndex, pageSize));
     }
 
     @Override
@@ -42,7 +38,8 @@ public class LogIntakeService implements LogIntakeUseCase {
         if(intakeLog.isPresent()) {
             return mapper.toLogResult(intakeLog.get());
         } else {
-            return mapper.toLogResult(IntakeLog.create(profileId, today));
+            IntakeLog newLog = IntakeLog.create(profileId, today);
+            return mapper.toLogResult(intakeLogRepository.save(newLog));
         }
     }
 

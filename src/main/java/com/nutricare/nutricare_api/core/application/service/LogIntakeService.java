@@ -22,24 +22,19 @@ public class LogIntakeService implements LogIntakeUseCase {
 
     @Override
     public List<IntakeLogHeaderResult> listLogs(Integer profileId, int pageIndex, int pageSize) {
-        return mapper.toListLogsHeaderResult(intakeLogRepository.findAllByProfileId(profileId, pageIndex, pageSize));
+        return mapper.toListLogHeaderResult(intakeLogRepository.findAllByProfileId(profileId, pageIndex, pageSize));
     }
 
     @Override
-    public Optional<IntakeLogResult> findLogById(Integer id) {
-        return intakeLogRepository.findById(id).map(mapper::toLogResult);
-    }
-
-    @Override
-    public IntakeLogResult createLog(Integer profileId) {
+    public IntakeLogHeaderResult createLog(Integer profileId) {
         LocalDate today = LocalDate.now();
         Optional<IntakeLog> intakeLog = intakeLogRepository.findByProfileIdAndDate(profileId, today);
 
         if(intakeLog.isPresent()) {
-            return mapper.toLogResult(intakeLog.get());
+            return mapper.toLogHeaderResult(intakeLog.get());
         } else {
             IntakeLog newLog = IntakeLog.create(profileId, today);
-            return mapper.toLogResult(intakeLogRepository.save(newLog));
+            return mapper.toLogHeaderResult(intakeLogRepository.save(newLog));
         }
     }
 

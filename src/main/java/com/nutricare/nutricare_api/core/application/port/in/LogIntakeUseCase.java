@@ -8,8 +8,7 @@ import java.util.Optional;
 
 public interface LogIntakeUseCase {
     List<IntakeLogHeaderResult> listLogs(Integer profileId, int pageIndex, int pageSize);
-    Optional<IntakeLogResult> findLogById(Integer id);
-    IntakeLogResult createLog(Integer profileId);
+    IntakeLogHeaderResult createLog(Integer profileId);
     void deleteLogById(Integer id);
     List<IntakeEntryResult> listEntriesOnDate(Integer profileId, LocalDate date);
     Optional<IntakeEntryResult> findEntryById(Integer id);

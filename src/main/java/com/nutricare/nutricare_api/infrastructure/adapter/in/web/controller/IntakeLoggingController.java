@@ -31,8 +31,9 @@ public class IntakeLoggingController {
     }
 
     @PostMapping("/profiles/{profileId}")
-    public ResponseEntity<ApiResponse<IntakeLogHeaderResponse>> createLog(@PathVariable Integer profileId) {
-        var createdLog = useCase.createLog(profileId);
+    public ResponseEntity<ApiResponse<IntakeLogHeaderResponse>> createLog(@PathVariable Integer profileId,
+                                                                           @RequestParam LocalDate date) {
+        var createdLog = useCase.createLog(profileId, date);
         URI location = ServletUriComponentsBuilder
                 .fromCurrentContextPath()
                 .path("/api/intake-logs/{id}")

@@ -29,6 +29,9 @@ public class IntakeLog {
         if (logDate == null) {
             throw new InvalidIntakeLogException("logDate is required");
         }
+        if (logDate.isAfter(LocalDate.now())) {
+            throw new InvalidIntakeLogException("logDate cannot be in the future");
+        }
         this.id = id;
         this.profileId = profileId;
         this.logDate = logDate;

@@ -26,14 +26,13 @@ public class LogIntakeService implements LogIntakeUseCase {
     }
 
     @Override
-    public IntakeLogHeaderResult createLog(Integer profileId) {
-        LocalDate today = LocalDate.now();
-        Optional<IntakeLog> intakeLog = intakeLogRepository.findByProfileIdAndDate(profileId, today);
+    public IntakeLogHeaderResult createLog(Integer profileId, LocalDate logDate) {
+        Optional<IntakeLog> intakeLog = intakeLogRepository.findByProfileIdAndDate(profileId, logDate);
 
         if(intakeLog.isPresent()) {
             return mapper.toLogHeaderResult(intakeLog.get());
         } else {
-            IntakeLog newLog = IntakeLog.create(profileId, today);
+            IntakeLog newLog = IntakeLog.create(profileId, logDate);
             return mapper.toLogHeaderResult(intakeLogRepository.save(newLog));
         }
     }

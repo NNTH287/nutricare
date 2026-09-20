@@ -16,7 +16,7 @@ public class NutrientTargetCalculator {
                 if (amount == null) {
                     unresolved.add(r.getNutrientId());
                 }
-                else resolved.add(new NutrientTarget(r.getNutrientId(), amount));
+                else resolved.add(new NutrientTarget(r.getNutrientId(), amount, r.getMaxVal()));
             }
         }
         return new NutrientCalculation(resolved, unresolved);

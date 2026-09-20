@@ -26,7 +26,7 @@ public class ManageNutrientService implements ManageNutrientUseCase {
     }
 
     @Override
-    public NutrientResult save(CreateNutrientCommand command) {
+    public NutrientResult create(CreateNutrientCommand command) {
         if(nutrientRepository.existsCode(command.code())) {
             throw new InvalidNutrientException("code is existed");
         }

@@ -1,7 +1,7 @@
-package com.nutricare.nutricare_api.infrastructure.adapter.in.web;
+package com.nutricare.nutricare_api.infrastructure.adapter.in.web.controller;
 
 import com.nutricare.nutricare_api.core.application.dto.NutrientResult;
-import com.nutricare.nutricare_api.core.application.service.ManageNutrientService;
+import com.nutricare.nutricare_api.core.application.port.in.ManageNutrientUseCase;
 import com.nutricare.nutricare_api.infrastructure.adapter.in.web.api.ApiResponse;
 import com.nutricare.nutricare_api.infrastructure.adapter.in.web.dto.CreateNutrientRequest;
 import com.nutricare.nutricare_api.infrastructure.adapter.in.web.dto.NutrientResponse;
@@ -18,17 +18,17 @@ import java.net.URI;
 @RequestMapping("/api/nutrients")
 @RequiredArgsConstructor
 public class NutrientController {
-    private final ManageNutrientService manageNutrientService;
+    private final ManageNutrientUseCase useCase;
     private final NutrientWebMapper mapper;
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<NutrientResponse>> getNutrient(@PathVariable Integer id) {
-        return ApiResponse.ok(mapper.toResponse(manageNutrientService.findById(id).orElseThrow()));
+        return ApiResponse.ok(mapper.toResponse(useCase.findById(id).orElseThrow()));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<NutrientResponse>> createNutrient(@RequestBody CreateNutrientRequest req) {
-        NutrientResult savedNutrient = manageNutrientService.save(mapper.toCreateCommand(req));
+        NutrientResult savedNutrient = useCase.create(mapper.toCreateCommand(req));
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .path("/{id}")
@@ -40,12 +40,12 @@ public class NutrientController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<NutrientResponse>> updateNutrient(@PathVariable Integer id, @RequestBody UpdateNutrientRequest req) {
-        return ApiResponse.ok(mapper.toResponse(manageNutrientService.update(mapper.toUpdateCommand(id, req))));
+        return ApiResponse.ok(mapper.toResponse(useCase.update(mapper.toUpdateCommand(id, req))));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteNutrient(@PathVariable Integer id) {
-        manageNutrientService.deleteById(id);
+        useCase.deleteById(id);
         return ApiResponse.noContent();
     }
 }

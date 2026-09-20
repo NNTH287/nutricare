@@ -85,6 +85,7 @@ Code should read like the business talks. Class, method, and variable names must
 11. **Naming follows the ubiquitous language**, not technical/generic terms. Prefer `Profile.setTrimester()` over a generic `ProfileService.updateField(profile, "trimester", value)`.
 12. **Tests mirror the architecture.** Domain logic gets fast, framework-free unit tests. Use cases get tests with mocked ports. Infrastructure/integration tests are separate and slower — don't blend the two. Never weaken `CleanArchitectureTest` (e.g. adding a package to the allowed-dependencies whitelist, or removing a layer rule) to make a violation pass — fix the dependency direction instead.
 13. **When unsure which layer something belongs in**, default to pushing it inward (toward `core.domain`) rather than outward, and flag the uncertainty rather than guessing silently.
+14. **Write PRD/use-case descriptions in general, business-facing language, not code-level technical terms.** Ubiquitous-language entity names (`Profile`, `FoodItem`, `Nutrient`) in backticks are fine — those are the terms domain experts use. Raw field/variable names (`ownerProfileId`, `nutrientId`, `amountPer100g`) and code identifiers are not — describe what they mean ("serving size", "how much per 100g", "visible only to its owner") instead of naming the field.
 
 ## Commands
 

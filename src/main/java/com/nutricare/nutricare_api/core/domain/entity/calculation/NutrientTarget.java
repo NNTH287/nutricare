@@ -14,7 +14,7 @@ public class NutrientTarget {
         if(targetAmountG == null || targetAmountG <= 0) {
             throw new InvalidNutrientTargetException("targetAmountG must be positive");
         }
-        if(maxAmountG == null || maxAmountG <= 0) {
+        if(maxAmountG != null && maxAmountG <= 0) {
             throw new InvalidNutrientTargetException("maxAmountG must be positive");
         }
         this.nutrientId = nutrientId;

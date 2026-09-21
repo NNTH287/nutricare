@@ -1,6 +1,5 @@
 package com.nutricare.nutricare_api.core.application.service;
 
-import com.nutricare.nutricare_api.core.application.dto.CalculateNutrientCommand;
 import com.nutricare.nutricare_api.core.application.dto.CalculateNutrientResult;
 import com.nutricare.nutricare_api.core.application.mapper.CalculationResultMapper;
 import com.nutricare.nutricare_api.core.application.port.in.CalculateNutrientUseCase;
@@ -30,9 +29,9 @@ public class CalculateNutrientService implements CalculateNutrientUseCase {
     }
 
     @Override
-    public CalculateNutrientResult calculateNutrientResult(CalculateNutrientCommand command) {
-        Profile profile = profileRepository.getById(command.profileId());
-        NutritionStandard standard = standardRepository.getById(command.nutrientStandardId());
+    public CalculateNutrientResult calculateNutrientResult(Integer profileId, Integer nutrientStandardId) {
+        Profile profile = profileRepository.getById(profileId);
+        NutritionStandard standard = standardRepository.getById(nutrientStandardId);
         List<NutrientRequirement> requirements = requirementRepository.findByStandard(standard.getId());
         List<EnergyCoefficient> energyCoefficients = energyCoefficientRepository.findByStandard(standard.getId());
 

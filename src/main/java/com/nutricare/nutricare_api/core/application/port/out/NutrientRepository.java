@@ -7,6 +7,8 @@ import java.util.Optional;
 public interface NutrientRepository {
     Optional<Nutrient> findById(Integer nutrientId);
 
+    Optional<Nutrient> findByCode(String code);
+
     boolean existsCode(String code);
 
     Nutrient save(Nutrient nutrient);

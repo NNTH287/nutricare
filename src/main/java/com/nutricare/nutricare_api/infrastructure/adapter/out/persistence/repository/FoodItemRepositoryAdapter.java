@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,6 +27,13 @@ public class FoodItemRepositoryAdapter implements FoodItemRepository {
     @Override
     public Optional<FoodItem> findById(Integer id) {
         return repository.findById(id).map(mapper::toDomain);
+    }
+
+    @Override
+    public List<FoodItem> findAllByIds(Collection<Integer> ids) {
+        return repository.findAllByIdIn(ids).stream()
+                .map(mapper::toDomain)
+                .toList();
     }
 
     @Override

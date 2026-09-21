@@ -20,6 +20,11 @@ public class NutrientRepositoryAdapter implements NutrientRepository {
     }
 
     @Override
+    public Optional<Nutrient> findByCode(String code) {
+        return repository.findByCode(code).map(mapper::toDomain);
+    }
+
+    @Override
     public boolean existsCode(String code) {
         return false;
     }

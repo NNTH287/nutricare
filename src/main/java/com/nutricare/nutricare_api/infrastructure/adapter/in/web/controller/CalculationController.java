@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,5 +21,10 @@ public class CalculationController {
     @GetMapping("/api/profile/{profileId}/nutrient-calculation")
     public ResponseEntity<ApiResponse<CalculateNutrientResponse>> calculate(@PathVariable Integer profileId, @RequestParam Integer standardId) {
         return ApiResponse.ok(mapper.toResponse(useCase.calculateNutrientResult(profileId, standardId)));
+    }
+
+    @PostMapping("/api/profile/{profileId}/nutrient-calculation")
+    public ResponseEntity<ApiResponse<CalculateNutrientResponse>> calculateAndSave(@PathVariable Integer profileId, @RequestParam Integer standardId) {
+        return ApiResponse.ok(mapper.toResponse(useCase.saveCalculationResult(profileId, standardId)));
     }
 }

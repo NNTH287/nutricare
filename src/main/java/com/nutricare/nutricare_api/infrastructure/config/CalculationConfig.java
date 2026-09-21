@@ -21,8 +21,9 @@ public class CalculationConfig {
                                                                EnergyCoefficientRepository energyCoefficientRepository,
                                                                NutritionStandardRepository standardRepository,
                                                                ProfileRepository profileRepository,
+                                                               CalculationResultRepository calculationResultRepository,
                                                                CalculationResultMapper calculationResultMapper) {
         return new CalculateNutrientService(requirementRepository, energyCoefficientRepository, standardRepository,
-                profileRepository, calculationResultMapper);
+                profileRepository, calculationResultRepository, calculationResultMapper);
     }
 }

@@ -23,9 +23,10 @@ public class GapReportConfig {
                                                                  NutrientRequirementRepository requirementRepository,
                                                                  EnergyCoefficientRepository energyCoefficientRepository,
                                                                  NutrientRepository nutrientRepository,
+                                                                 CalculationResultRepository calculationResultRepository,
                                                                  GapReportMapper gapReportMapper) {
         return new GetIntakeGapReportService(profileRepository, standardRepository, intakeLogRepository,
                 foodItemRepository, requirementRepository, energyCoefficientRepository, nutrientRepository,
-                gapReportMapper);
+                calculationResultRepository, gapReportMapper);
     }
 }

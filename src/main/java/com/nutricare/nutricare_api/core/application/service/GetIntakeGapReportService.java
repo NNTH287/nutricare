@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -29,6 +30,7 @@ public class GetIntakeGapReportService implements GetIntakeGapReportUseCase {
     private final NutrientRequirementRepository requirementRepository;
     private final EnergyCoefficientRepository energyCoefficientRepository;
     private final NutrientRepository nutrientRepository;
+    private final CalculationResultRepository calculationResultRepository;
     private final GapReportMapper mapper;
 
     public GetIntakeGapReportService(ProfileRepository profileRepository,
@@ -38,6 +40,7 @@ public class GetIntakeGapReportService implements GetIntakeGapReportUseCase {
                                       NutrientRequirementRepository requirementRepository,
                                       EnergyCoefficientRepository energyCoefficientRepository,
                                       NutrientRepository nutrientRepository,
+                                      CalculationResultRepository calculationResultRepository,
                                       GapReportMapper mapper) {
         this.profileRepository = profileRepository;
         this.standardRepository = standardRepository;
@@ -46,6 +49,7 @@ public class GetIntakeGapReportService implements GetIntakeGapReportUseCase {
         this.requirementRepository = requirementRepository;
         this.energyCoefficientRepository = energyCoefficientRepository;
         this.nutrientRepository = nutrientRepository;
+        this.calculationResultRepository = calculationResultRepository;
         this.mapper = mapper;
     }
 
@@ -57,22 +61,38 @@ public class GetIntakeGapReportService implements GetIntakeGapReportUseCase {
 
         Map<Integer, Double> consumedAmountByNutrientId = totalConsumedAmounts(log);
 
+        NutrientTargets targets = resolveNutrientTargets(profile, standard);
+
+        Integer energyNutrientId = nutrientRepository.findByCode(ENERGY_NUTRIENT_CODE).orElseThrow().getId();
+        double consumedCalories = consumedAmountByNutrientId.getOrDefault(energyNutrientId, 0.0);
+
+        Set<NutrientGap> gaps = targets.resolvedTargets().stream()
+                .map(target -> NutrientGap.evaluate(target.getNutrientId(),
+                        consumedAmountByNutrientId.getOrDefault(target.getNutrientId(), 0.0), target))
+                .collect(Collectors.toUnmodifiableSet());
+
+        return mapper.toDto(standard.getName(), date, consumedCalories, targets.calorieTarget(),
+                gaps, targets.unresolvedNutrientIds());
+    }
+
+    private NutrientTargets resolveNutrientTargets(Profile profile, NutritionStandard standard) {
+        Optional<CalculationResult> saved = calculationResultRepository
+                .findLatestByProfileIdAndStandardId(profile.getId(), standard.getId());
+        if (saved.isPresent() && saved.get().isStillValidFor(profile)) {
+            CalculationResult result = saved.get();
+            return new NutrientTargets(result.getNutrientTargets(), result.getUnresolvedNutrientIds(), result.getCalorieTarget());
+        }
+
         List<NutrientRequirement> requirements = requirementRepository.findByStandard(standard.getId());
         NutrientCalculation calculation = NutrientTargetCalculator.calculate(profile, requirements);
 
         List<EnergyCoefficient> energyCoefficients = energyCoefficientRepository.findByStandard(standard.getId());
         double calorieTarget = NutrientTargetCalculator.resolveCalorieTarget(profile, standard.getId(), energyCoefficients);
 
-        Integer energyNutrientId = nutrientRepository.findByCode(ENERGY_NUTRIENT_CODE).orElseThrow().getId();
-        double consumedCalories = consumedAmountByNutrientId.getOrDefault(energyNutrientId, 0.0);
+        return new NutrientTargets(calculation.getResolvedTargets(), calculation.getUnresolvedTargets(), calorieTarget);
+    }
 
-        Set<NutrientGap> gaps = calculation.getResolvedTargets().stream()
-                .map(target -> NutrientGap.evaluate(target.getNutrientId(),
-                        consumedAmountByNutrientId.getOrDefault(target.getNutrientId(), 0.0), target))
-                .collect(Collectors.toUnmodifiableSet());
-
-        return mapper.toDto(standard.getName(), date, consumedCalories, calorieTarget,
-                gaps, calculation.getUnresolvedTargets());
+    private record NutrientTargets(Set<NutrientTarget> resolvedTargets, Set<Integer> unresolvedNutrientIds, double calorieTarget) {
     }
 
     private Map<Integer, Double> totalConsumedAmounts(IntakeLog log) {

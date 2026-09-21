@@ -14,22 +14,35 @@ public class CalculateNutrientService implements CalculateNutrientUseCase {
     private final EnergyCoefficientRepository energyCoefficientRepository;
     private final NutritionStandardRepository standardRepository;
     private final ProfileRepository profileRepository;
+    private final CalculationResultRepository calculationResultRepository;
     private final CalculationResultMapper mapper;
 
     public CalculateNutrientService(NutrientRequirementRepository requirementRepository,
                                     EnergyCoefficientRepository energyCoefficientRepository,
                                     NutritionStandardRepository standardRepository,
                                     ProfileRepository profileRepository,
+                                    CalculationResultRepository calculationResultRepository,
                                     CalculationResultMapper mapper) {
         this.requirementRepository = requirementRepository;
         this.energyCoefficientRepository = energyCoefficientRepository;
         this.standardRepository = standardRepository;
         this.profileRepository = profileRepository;
+        this.calculationResultRepository = calculationResultRepository;
         this.mapper = mapper;
     }
 
     @Override
     public CalculateNutrientResult calculateNutrientResult(Integer profileId, Integer nutrientStandardId) {
+        return mapper.toDto(buildCalculationResult(profileId, nutrientStandardId));
+    }
+
+    @Override
+    public CalculateNutrientResult saveCalculationResult(Integer profileId, Integer nutrientStandardId) {
+        CalculationResult result = calculationResultRepository.save(buildCalculationResult(profileId, nutrientStandardId));
+        return mapper.toDto(result);
+    }
+
+    private CalculationResult buildCalculationResult(Integer profileId, Integer nutrientStandardId) {
         Profile profile = profileRepository.getById(profileId);
         NutritionStandard standard = standardRepository.getById(nutrientStandardId);
         List<NutrientRequirement> requirements = requirementRepository.findByStandard(standard.getId());
@@ -38,9 +51,7 @@ public class CalculateNutrientService implements CalculateNutrientUseCase {
         NutrientCalculation nutrientCalculation = NutrientTargetCalculator.calculate(profile, requirements);
         double calorieTarget = NutrientTargetCalculator.resolveCalorieTarget(profile, standard.getId(), energyCoefficients);
 
-        CalculationResult result = CalculationResult.create(profile.getId(), standard.getId(), calorieTarget,
-                nutrientCalculation.getResolvedTargets());
-
-        return mapper.toDto(result, nutrientCalculation.getUnresolvedTargets());
+        return CalculationResult.create(profile.getId(), standard.getId(), calorieTarget,
+                nutrientCalculation.getResolvedTargets(), nutrientCalculation.getUnresolvedTargets());
     }
 }

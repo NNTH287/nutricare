@@ -21,12 +21,12 @@ public class CalculationResultMapper {
         this.nutrientRepository = nutrientRepository;
     }
 
-    public CalculateNutrientResult toDto(CalculationResult domain, Set<Integer> unresolvedNutrientIds) {
+    public CalculateNutrientResult toDto(CalculationResult domain) {
         NutritionStandard standard = standardRepository.getById(domain.getStandardId());
 
         return new CalculateNutrientResult(standard.getName(), domain.getCalculatedAt(),
                 domain.getCalorieTarget(), convertFromNutrientTargets(domain.getNutrientTargets()),
-                convertUnresolvedNutrientIds(unresolvedNutrientIds));
+                convertUnresolvedNutrientIds(domain.getUnresolvedNutrientIds()));
     }
 
     private Set<String> convertUnresolvedNutrientIds(Set<Integer> nutrientIds) {

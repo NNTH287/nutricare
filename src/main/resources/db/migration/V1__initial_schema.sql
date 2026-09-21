@@ -135,6 +135,12 @@ CREATE TABLE calculation_result_nutrient_target (
     calculation_result_id INTEGER NOT NULL REFERENCES calculation_result (id) ON DELETE CASCADE,
     nutrient_id           INTEGER NOT NULL REFERENCES nutrient (id) ON DELETE RESTRICT,
     target_amount_g       DOUBLE PRECISION NOT NULL,
-    max_amount_g          DOUBLE PRECISION NOT NULL,
+    max_amount_g          DOUBLE PRECISION,
+    PRIMARY KEY (calculation_result_id, nutrient_id)
+);
+
+CREATE TABLE calculation_result_unresolved_nutrient (
+    calculation_result_id INTEGER NOT NULL REFERENCES calculation_result (id) ON DELETE CASCADE,
+    nutrient_id           INTEGER NOT NULL REFERENCES nutrient (id) ON DELETE RESTRICT,
     PRIMARY KEY (calculation_result_id, nutrient_id)
 );

@@ -166,6 +166,13 @@ public class Profile {
         return updatedAt;
     }
 
+    public void verifyOwnedBy(Integer requestingUserId) {
+        if (!Objects.equals(userId, requestingUserId)) {
+            throw new ProfileAccessDeniedException(
+                    "Profile " + id + " is not owned by user " + requestingUserId);
+        }
+    }
+
     private void touch() {
         updatedAt = LocalDateTime.now();
     }

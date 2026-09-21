@@ -32,18 +32,19 @@ public class CalculateNutrientService implements CalculateNutrientUseCase {
     }
 
     @Override
-    public CalculateNutrientResult calculateNutrientResult(Integer profileId, Integer nutrientStandardId) {
-        return mapper.toDto(buildCalculationResult(profileId, nutrientStandardId));
+    public CalculateNutrientResult calculateNutrientResult(Integer profileId, Integer nutrientStandardId, Integer authenticatedUserId) {
+        return mapper.toDto(buildCalculationResult(profileId, nutrientStandardId, authenticatedUserId));
     }
 
     @Override
-    public CalculateNutrientResult saveCalculationResult(Integer profileId, Integer nutrientStandardId) {
-        CalculationResult result = calculationResultRepository.save(buildCalculationResult(profileId, nutrientStandardId));
+    public CalculateNutrientResult saveCalculationResult(Integer profileId, Integer nutrientStandardId, Integer authenticatedUserId) {
+        CalculationResult result = calculationResultRepository.save(buildCalculationResult(profileId, nutrientStandardId, authenticatedUserId));
         return mapper.toDto(result);
     }
 
-    private CalculationResult buildCalculationResult(Integer profileId, Integer nutrientStandardId) {
+    private CalculationResult buildCalculationResult(Integer profileId, Integer nutrientStandardId, Integer authenticatedUserId) {
         Profile profile = profileRepository.getById(profileId);
+        profile.verifyOwnedBy(authenticatedUserId);
         NutritionStandard standard = standardRepository.getById(nutrientStandardId);
         List<NutrientRequirement> requirements = requirementRepository.findByStandard(standard.getId());
         List<EnergyCoefficient> energyCoefficients = energyCoefficientRepository.findByStandard(standard.getId());

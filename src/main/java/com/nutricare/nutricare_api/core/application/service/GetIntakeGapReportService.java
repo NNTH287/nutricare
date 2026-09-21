@@ -54,8 +54,9 @@ public class GetIntakeGapReportService implements GetIntakeGapReportUseCase {
     }
 
     @Override
-    public GapReportResult getGapReport(Integer profileId, LocalDate date, Integer nutritionStandardId) {
+    public GapReportResult getGapReport(Integer profileId, LocalDate date, Integer nutritionStandardId, Integer authenticatedUserId) {
         Profile profile = profileRepository.getById(profileId);
+        profile.verifyOwnedBy(authenticatedUserId);
         NutritionStandard standard = standardRepository.getById(nutritionStandardId);
         IntakeLog log = intakeLogRepository.findByProfileIdAndDate(profileId, date).orElseThrow();
 

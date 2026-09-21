@@ -7,8 +7,10 @@ import com.nutricare.nutricare_api.infrastructure.adapter.in.web.dto.IntakeEntry
 import com.nutricare.nutricare_api.infrastructure.adapter.in.web.dto.IntakeLogHeaderResponse;
 import com.nutricare.nutricare_api.infrastructure.adapter.in.web.dto.UpdateIntakeEntryRequest;
 import com.nutricare.nutricare_api.infrastructure.adapter.in.web.mapper.IntakeLogWebMapper;
+import com.nutricare.nutricare_api.infrastructure.adapter.in.web.security.AuthenticatedUserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -26,14 +28,16 @@ public class IntakeLoggingController {
     @GetMapping("/profiles/{profileId}")
     public ResponseEntity<ApiResponse<List<IntakeLogHeaderResponse>>> listByProfile (@PathVariable Integer profileId,
                                                                                     @RequestParam Integer pageIndex,
-                                                                                    @RequestParam Integer pageSize) {
-        return ApiResponse.ok(mapper.toHeaderResponseList(useCase.listLogs(profileId, pageIndex, pageSize)));
+                                                                                    @RequestParam Integer pageSize,
+                                                                                    @AuthenticationPrincipal AuthenticatedUserPrincipal principal) {
+        return ApiResponse.ok(mapper.toHeaderResponseList(useCase.listLogs(profileId, pageIndex, pageSize, principal.userId())));
     }
 
     @PostMapping("/profiles/{profileId}")
     public ResponseEntity<ApiResponse<IntakeLogHeaderResponse>> createLog(@PathVariable Integer profileId,
-                                                                           @RequestParam LocalDate date) {
-        var createdLog = useCase.createLog(profileId, date);
+                                                                           @RequestParam LocalDate date,
+                                                                           @AuthenticationPrincipal AuthenticatedUserPrincipal principal) {
+        var createdLog = useCase.createLog(profileId, date, principal.userId());
         URI location = ServletUriComponentsBuilder
                 .fromCurrentContextPath()
                 .path("/api/intake-logs/{id}")
@@ -44,15 +48,16 @@ public class IntakeLoggingController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteLog(@PathVariable Integer id) {
-        useCase.deleteLogById(id);
+    public ResponseEntity<Void> deleteLog(@PathVariable Integer id, @AuthenticationPrincipal AuthenticatedUserPrincipal principal) {
+        useCase.deleteLogById(id, principal.userId());
         return ApiResponse.noContent();
     }
 
     @GetMapping("/profiles/{profileId}/{date}")
     public ResponseEntity<ApiResponse<List<IntakeEntryResponse>>> listEntries (@PathVariable Integer profileId,
-                                                                               @PathVariable LocalDate date) {
-        return ApiResponse.ok(mapper.toEntryResponseList(useCase.listEntriesOnDate(profileId, date)));
+                                                                               @PathVariable LocalDate date,
+                                                                               @AuthenticationPrincipal AuthenticatedUserPrincipal principal) {
+        return ApiResponse.ok(mapper.toEntryResponseList(useCase.listEntriesOnDate(profileId, date, principal.userId())));
     }
 
     @GetMapping("/entries/{id}")
@@ -61,8 +66,10 @@ public class IntakeLoggingController {
     }
 
     @PostMapping("/{intakeLogId}/entries")
-    public ResponseEntity<ApiResponse<IntakeEntryResponse>> createEntry(@PathVariable Integer intakeLogId, @RequestBody CreateIntakeEntryRequest req) {
-        var createdEntry = useCase.createEntry(mapper.toCreateCommand(intakeLogId, req));
+    public ResponseEntity<ApiResponse<IntakeEntryResponse>> createEntry(@PathVariable Integer intakeLogId,
+                                                                          @RequestBody CreateIntakeEntryRequest req,
+                                                                          @AuthenticationPrincipal AuthenticatedUserPrincipal principal) {
+        var createdEntry = useCase.createEntry(mapper.toCreateCommand(intakeLogId, req), principal.userId());
         URI location = ServletUriComponentsBuilder
                 .fromCurrentContextPath()
                 .path("/api/intake-logs/entries/{id}")
@@ -75,13 +82,16 @@ public class IntakeLoggingController {
     @PutMapping("/{intakeLogId}/entries/{entryId}")
     public ResponseEntity<ApiResponse<IntakeEntryResponse>> updateEntry(@PathVariable Integer intakeLogId,
                                                                          @PathVariable Integer entryId,
-                                                                         @RequestBody UpdateIntakeEntryRequest req) {
-        return ApiResponse.ok(mapper.toEntryResponse(useCase.updateEntry(mapper.toUpdateCommand(intakeLogId, entryId, req))));
+                                                                         @RequestBody UpdateIntakeEntryRequest req,
+                                                                         @AuthenticationPrincipal AuthenticatedUserPrincipal principal) {
+        return ApiResponse.ok(mapper.toEntryResponse(useCase.updateEntry(mapper.toUpdateCommand(intakeLogId, entryId, req), principal.userId())));
     }
 
     @DeleteMapping("/{intakeLogId}/entries/{entryId}")
-    public ResponseEntity<Void> deleteEntry(@PathVariable Integer intakeLogId, @PathVariable Integer entryId) {
-        useCase.deleteEntryById(intakeLogId, entryId);
+    public ResponseEntity<Void> deleteEntry(@PathVariable Integer intakeLogId,
+                                             @PathVariable Integer entryId,
+                                             @AuthenticationPrincipal AuthenticatedUserPrincipal principal) {
+        useCase.deleteEntryById(intakeLogId, entryId, principal.userId());
         return ApiResponse.noContent();
     }
 }

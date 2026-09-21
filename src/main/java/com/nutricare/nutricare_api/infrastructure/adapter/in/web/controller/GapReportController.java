@@ -4,8 +4,10 @@ import com.nutricare.nutricare_api.core.application.port.in.GetIntakeGapReportUs
 import com.nutricare.nutricare_api.infrastructure.adapter.in.web.api.ApiResponse;
 import com.nutricare.nutricare_api.infrastructure.adapter.in.web.dto.GapReportResponse;
 import com.nutricare.nutricare_api.infrastructure.adapter.in.web.mapper.GapReportWebMapper;
+import com.nutricare.nutricare_api.infrastructure.adapter.in.web.security.AuthenticatedUserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,7 +24,8 @@ public class GapReportController {
     @GetMapping("/api/profiles/{profileId}/intake-gap-report/{date}")
     public ResponseEntity<ApiResponse<GapReportResponse>> getReport(@PathVariable Integer profileId,
                                                                      @PathVariable LocalDate date,
-                                                                     @RequestParam Integer standardId) {
-        return ApiResponse.ok(mapper.toResponse(useCase.getGapReport(profileId, date, standardId)));
+                                                                     @RequestParam Integer standardId,
+                                                                     @AuthenticationPrincipal AuthenticatedUserPrincipal principal) {
+        return ApiResponse.ok(mapper.toResponse(useCase.getGapReport(profileId, date, standardId, principal.userId())));
     }
 }

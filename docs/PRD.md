@@ -31,14 +31,15 @@ ate closes that gap (intake tracking with a per-nutrient gap report).
 
 ## Target Users
 
-Since v1 has no authentication, these describe the *actor* invoking each
-capability, not an authenticated account:
+As of UC07, these actors act as an authenticated account rather than
+anonymously — see UC07 for registration/sign-in and how profile ownership
+is enforced:
 
 | Actor                                      | Use case                                                                                                                                                                         |
 |--------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **End consumer** (via a future client app) | Create a profile for themselves or a dependent (e.g. a parent creating an `INFANT` profile for their child); get nutrient targets; log meals; see a saved menu.                  |
-| **Nutrition-conscious household**          | Track multiple profiles (e.g. a pregnant mother and a child) under the same eventual `User` account once auth ships.                                                             |
-| **Content/data admin**                     | Populate and curate the shared food catalog (`food_item` where `owner_profile_id IS NULL`); the currently-open food-CRUD endpoints are flagged for role-gating once auth exists. |
+| **Nutrition-conscious household**          | Track multiple profiles (e.g. a pregnant mother and a child) under the same `User` account.                                                             |
+| **Content/data admin**                     | Populate and curate the shared food catalog (`food_item` where `owner_profile_id IS NULL`); the food-CRUD endpoints are still open to any authenticated account pending role-gating by the `ADMIN` role UC07 introduced. |
 | **Front-end/client developer**             | Consumes `/api/v1/standards` and reference-table endpoints to build correct, standard-aware input forms without hardcoding age bands or activity multipliers client-side.        |
 
 ## Key Features & Capabilities
@@ -168,6 +169,21 @@ covers product scope; those docs cover implementation structure.
 6. User views the report.
 
 **Outcome**: User sees a per-nutrient gap report for a logged day — what's short, what's over the safe maximum, and what's on target.
+
+### UC07: Register and sign in
+**Actor**: End consumer or Admin
+</br>
+**Precondition**: None to register; an existing registered account to sign in.
+</br>
+**Goal**: Obtain an authenticated identity so that every other use case can be tied to the account that owns it, instead of being open to anyone who can reach the API.
+</br>
+**Flow**:
+1. **Register**: User submits an email and password. The system rejects the request if that email is already registered — email is the unique business key for an account. On success, the account is created with the standard member role and the user is immediately signed in.
+2. **Sign in**: User submits their email and password. The system rejects the request with a generic invalid-credentials response if the email isn't registered or the password doesn't match — it does not reveal which of the two was wrong.
+3. On successful registration or sign-in, the system issues an access token the user presents on every subsequent request to prove who they are.
+4. **Enforcement**: Every use case other than registration and sign-in now requires a valid access token. Where a use case acts on a specific `Profile` (UC01, UC05, UC06), the system also verifies the token's account owns that profile, rejecting the request otherwise.
+
+**Outcome**: The system has authenticated accounts, and every profile-scoped use case is restricted to the account that owns the profile — closing the "anyone can act as anyone" gap called out in the Target Users section.
 
 ## Constraints & Limitations
 

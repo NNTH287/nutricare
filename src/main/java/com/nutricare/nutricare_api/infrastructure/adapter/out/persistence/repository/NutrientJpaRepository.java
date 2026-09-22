@@ -7,4 +7,6 @@ import java.util.Optional;
 
 public interface NutrientJpaRepository extends JpaRepository<NutrientJpaEntity, Integer> {
     Optional<NutrientJpaEntity> findByCode(String code);
+
+    boolean existsByCode(String code);
 }

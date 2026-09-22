@@ -16,7 +16,7 @@ public class NutrientRepositoryAdapter implements NutrientRepository {
 
     @Override
     public Optional<Nutrient> findById(Integer nutrientId) {
-        return Optional.of(mapper.toDomain(repository.findById(nutrientId).orElseThrow()));
+        return repository.findById(nutrientId).map(mapper::toDomain);
     }
 
     @Override
@@ -26,12 +26,12 @@ public class NutrientRepositoryAdapter implements NutrientRepository {
 
     @Override
     public boolean existsCode(String code) {
-        return false;
+        return repository.existsByCode(code);
     }
 
     @Override
     public Nutrient save(Nutrient nutrient) {
-        return null;
+        return mapper.toDomain(repository.save(mapper.toEntity(nutrient)));
     }
 
     @Override

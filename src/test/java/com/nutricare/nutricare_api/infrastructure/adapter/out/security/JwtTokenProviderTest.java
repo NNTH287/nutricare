@@ -11,7 +11,7 @@ class JwtTokenProviderTest {
 
     private static final String SECRET = "test-secret-not-for-production-use-only-in-tests";
 
-    private final JwtTokenProvider provider = new JwtTokenProvider(SECRET, 60);
+    private final JwtTokenProvider provider = new JwtTokenProvider(new JwtProperties(SECRET, 60));
 
     @Test
     void givenAccessToken_whenValidatedAsAccess_thenReturnsClaims() {
@@ -35,7 +35,8 @@ class JwtTokenProviderTest {
 
     @Test
     void givenTokenSignedWithAnotherKey_whenValidated_thenIsRejected() {
-        JwtTokenProvider other = new JwtTokenProvider("a-completely-different-signing-secret-value", 60);
+        JwtTokenProvider other = new JwtTokenProvider(
+                new JwtProperties("a-completely-different-signing-secret-value", 60));
         String foreignToken = other.issueAccessToken(7, "user@example.com", Role.ADMIN);
 
         assertThat(provider.validateAndParse(foreignToken, TokenType.ACCESS)).isEmpty();
@@ -43,7 +44,7 @@ class JwtTokenProviderTest {
 
     @Test
     void givenExpiredToken_whenValidated_thenIsRejected() throws InterruptedException {
-        JwtTokenProvider instantlyExpiring = new JwtTokenProvider(SECRET, 0);
+        JwtTokenProvider instantlyExpiring = new JwtTokenProvider(new JwtProperties(SECRET, 0));
         String token = instantlyExpiring.issueAccessToken(7, "user@example.com", Role.USER);
         Thread.sleep(1_000);
 

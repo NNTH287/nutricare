@@ -8,6 +8,8 @@ import com.nutricare.nutricare_api.infrastructure.adapter.in.web.security.Authen
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +23,7 @@ public class CalculationController {
     private final CalculationWebMapper mapper;
 
     @GetMapping("/api/profile/{profileId}/nutrient-calculation")
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public ResponseEntity<ApiResponse<CalculateNutrientResponse>> calculate(@PathVariable Integer profileId,
                                                                               @RequestParam Integer standardId,
                                                                               @AuthenticationPrincipal AuthenticatedUserPrincipal principal) {
@@ -28,6 +31,7 @@ public class CalculationController {
     }
 
     @PostMapping("/api/profile/{profileId}/nutrient-calculation")
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     public ResponseEntity<ApiResponse<CalculateNutrientResponse>> calculateAndSave(@PathVariable Integer profileId,
                                                                                      @RequestParam Integer standardId,
                                                                                      @AuthenticationPrincipal AuthenticatedUserPrincipal principal) {

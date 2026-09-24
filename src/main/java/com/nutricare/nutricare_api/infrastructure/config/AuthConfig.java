@@ -3,6 +3,7 @@ package com.nutricare.nutricare_api.infrastructure.config;
 import com.nutricare.nutricare_api.core.application.port.in.AuthenticateUserUseCase;
 import com.nutricare.nutricare_api.core.application.port.in.RefreshTokenUseCase;
 import com.nutricare.nutricare_api.core.application.port.in.RegisterUserUseCase;
+import com.nutricare.nutricare_api.core.application.port.out.ApplicationMetrics;
 import com.nutricare.nutricare_api.core.application.port.out.PasswordHasher;
 import com.nutricare.nutricare_api.core.application.port.out.RefreshTokenRepository;
 import com.nutricare.nutricare_api.core.application.port.out.TokenIssuer;
@@ -24,8 +25,9 @@ public class AuthConfig {
 
     @Bean
     public AuthenticateUserUseCase authenticateUserUseCase(UserRepository userRepository, PasswordHasher passwordHasher,
-                                                             TokenIssuer tokenIssuer, RefreshTokenRepository refreshTokenRepository) {
-        return new AuthenticateUserService(userRepository, passwordHasher, tokenIssuer, refreshTokenRepository);
+                                                             TokenIssuer tokenIssuer, RefreshTokenRepository refreshTokenRepository,
+                                                             ApplicationMetrics metrics) {
+        return new AuthenticateUserService(userRepository, passwordHasher, tokenIssuer, refreshTokenRepository, metrics);
     }
 
     @Bean

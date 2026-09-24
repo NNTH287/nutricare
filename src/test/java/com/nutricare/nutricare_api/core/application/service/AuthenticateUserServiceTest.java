@@ -1,6 +1,7 @@
 package com.nutricare.nutricare_api.core.application.service;
 
 import com.nutricare.nutricare_api.core.application.dto.AuthenticatedUserResult;
+import com.nutricare.nutricare_api.core.application.port.out.ApplicationMetrics;
 import com.nutricare.nutricare_api.core.application.port.out.IssuedRefreshToken;
 import com.nutricare.nutricare_api.core.application.port.out.PasswordHasher;
 import com.nutricare.nutricare_api.core.application.port.out.RefreshTokenRepository;
@@ -43,23 +44,28 @@ class AuthenticateUserServiceTest {
     @Mock
     private RefreshTokenRepository refreshTokenRepository;
 
+    @Mock
+    private ApplicationMetrics metrics;
+
     private AuthenticateUserService service;
 
     @BeforeEach
     void setUp() {
-        service = new AuthenticateUserService(userRepository, passwordHasher, tokenIssuer, refreshTokenRepository);
+        service = new AuthenticateUserService(userRepository, passwordHasher, tokenIssuer, refreshTokenRepository, metrics);
     }
 
     @Test
-    void givenUnknownEmail_whenLoginIsCalled_thenThrowsInvalidCredentialsException() {
+    void givenUnknownEmail_whenLoginIsCalled_thenThrowsInvalidCredentialsExceptionAndRecordsFailure() {
         when(userRepository.findByEmail("unknown@example.com")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.login("unknown@example.com", "raw-password"))
                 .isInstanceOf(InvalidCredentialsException.class);
+
+        verify(metrics).recordLoginFailure("unknown_email");
     }
 
     @Test
-    void givenWrongPassword_whenLoginIsCalled_thenThrowsInvalidCredentialsException() {
+    void givenWrongPassword_whenLoginIsCalled_thenThrowsInvalidCredentialsExceptionAndRecordsFailure() {
         User user = User.reconstitute(1, "user@example.com", "hashed-password", Role.USER,
                 LocalDateTime.now(), LocalDateTime.now());
         when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(user));
@@ -67,6 +73,8 @@ class AuthenticateUserServiceTest {
 
         assertThatThrownBy(() -> service.login("user@example.com", "wrong-password"))
                 .isInstanceOf(InvalidCredentialsException.class);
+
+        verify(metrics).recordLoginFailure("wrong_password");
     }
 
     @Test

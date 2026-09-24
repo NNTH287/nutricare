@@ -6,6 +6,7 @@ import com.nutricare.nutricare_api.core.application.port.out.*;
 import com.nutricare.nutricare_api.core.domain.entity.calculation.CalculationResult;
 import com.nutricare.nutricare_api.core.domain.entity.calculation.EnergyCoefficient;
 import com.nutricare.nutricare_api.core.domain.entity.calculation.NutrientRequirement;
+import com.nutricare.nutricare_api.core.domain.entity.calculation.NutrientTarget;
 import com.nutricare.nutricare_api.core.domain.entity.calculation.NutrientTargetCalculator;
 import com.nutricare.nutricare_api.core.domain.entity.calculation.NutritionStandard;
 import com.nutricare.nutricare_api.core.domain.entity.fooditem.Nutrient;
@@ -13,6 +14,7 @@ import com.nutricare.nutricare_api.core.domain.entity.profile.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -93,19 +95,30 @@ class CalculateNutrientServiceTest {
     }
 
     @Test
-    void givenOwnedProfileAndResolvableTargets_whenSaveCalculationResultIsCalled_thenPersistsAndReturnsMappedResult() {
+    void givenOwnedProfileAndResolvableTargets_whenSaveCalculationResultIsCalled_thenPersistsCalculationCarryingComputedTargets() {
         Profile profile = ownedProfile(10);
         NutritionStandard standard = new NutritionStandard(1, "VN-RDA", "Vietnam RDA", "desc");
         EnergyCoefficient coefficient = EnergyCoefficient.create(1, GroupType.ADULT, SexType.FEMALE, 0, 1200, 10.0, 6.25, 5.0);
+        NutrientRequirement requirement = NutrientRequirement.create(1, GroupType.ADULT, 5, 0, 1200, 10.0, 20.0);
         when(profileRepository.getById(1)).thenReturn(profile);
         when(standardRepository.getById(1)).thenReturn(standard);
-        when(requirementRepository.findByStandard(1)).thenReturn(List.of());
+        when(requirementRepository.findByStandard(1)).thenReturn(List.of(requirement));
         when(energyCoefficientRepository.findByStandard(1)).thenReturn(List.of(coefficient));
+        when(nutrientRepository.findById(5)).thenReturn(Optional.of(Nutrient.reconstitute(5, "protein", "Protein", "g")));
         when(calculationResultRepository.save(any(CalculationResult.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         CalculateNutrientResult result = service.saveCalculationResult(1, 1, 10);
 
         assertThat(result.standard()).isEqualTo("Vietnam RDA");
-        verify(calculationResultRepository).save(any(CalculationResult.class));
+
+        ArgumentCaptor<CalculationResult> captor = ArgumentCaptor.forClass(CalculationResult.class);
+        verify(calculationResultRepository).save(captor.capture());
+        CalculationResult persisted = captor.getValue();
+        assertThat(persisted.getProfileId()).isEqualTo(1);
+        assertThat(persisted.getStandardId()).isEqualTo(1);
+        assertThat(persisted.getCalorieTarget()).isGreaterThan(0);
+        assertThat(persisted.getNutrientTargets())
+                .extracting(NutrientTarget::getNutrientId)
+                .containsExactly(5);
     }
 }

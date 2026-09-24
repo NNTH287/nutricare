@@ -11,6 +11,8 @@ import com.nutricare.nutricare_api.core.domain.entity.intake.IntakeEntry;
 import com.nutricare.nutricare_api.core.domain.entity.intake.IntakeLog;
 import com.nutricare.nutricare_api.core.domain.entity.profile.Profile;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +34,7 @@ public class GetIntakeGapReportService implements GetIntakeGapReportUseCase {
     private final NutrientRepository nutrientRepository;
     private final CalculationResultRepository calculationResultRepository;
     private final NutrientTargetCalculator nutrientTargetCalculator;
+    private final ApplicationMetrics metrics;
     private final GapReportMapper mapper;
 
     public GetIntakeGapReportService(ProfileRepository profileRepository,
@@ -43,6 +46,7 @@ public class GetIntakeGapReportService implements GetIntakeGapReportUseCase {
                                       NutrientRepository nutrientRepository,
                                       CalculationResultRepository calculationResultRepository,
                                       NutrientTargetCalculator nutrientTargetCalculator,
+                                      ApplicationMetrics metrics,
                                       GapReportMapper mapper) {
         this.profileRepository = profileRepository;
         this.standardRepository = standardRepository;
@@ -53,11 +57,19 @@ public class GetIntakeGapReportService implements GetIntakeGapReportUseCase {
         this.nutrientRepository = nutrientRepository;
         this.calculationResultRepository = calculationResultRepository;
         this.nutrientTargetCalculator = nutrientTargetCalculator;
+        this.metrics = metrics;
         this.mapper = mapper;
     }
 
     @Override
     public GapReportResult getGapReport(Integer profileId, LocalDate date, Integer nutritionStandardId, Integer authenticatedUserId) {
+        Instant start = Instant.now();
+        GapReportResult result = buildGapReport(profileId, date, nutritionStandardId, authenticatedUserId);
+        metrics.recordGapReportDuration(Duration.between(start, Instant.now()));
+        return result;
+    }
+
+    private GapReportResult buildGapReport(Integer profileId, LocalDate date, Integer nutritionStandardId, Integer authenticatedUserId) {
         Profile profile = profileRepository.getById(profileId);
         profile.verifyOwnedBy(authenticatedUserId);
         NutritionStandard standard = standardRepository.getById(nutritionStandardId);

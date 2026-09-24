@@ -56,6 +56,9 @@ class GetIntakeGapReportServiceTest {
     @Mock
     private CalculationResultRepository calculationResultRepository;
 
+    @Mock
+    private ApplicationMetrics metrics;
+
     private GetIntakeGapReportService service;
 
     private static Profile ownedProfile(LocalDateTime updatedAt) {
@@ -73,7 +76,7 @@ class GetIntakeGapReportServiceTest {
     void setUp() {
         service = new GetIntakeGapReportService(profileRepository, standardRepository, intakeLogRepository,
                 foodItemRepository, requirementRepository, energyCoefficientRepository, nutrientRepository,
-                calculationResultRepository, new NutrientTargetCalculator(), new GapReportMapper(nutrientRepository));
+                calculationResultRepository, new NutrientTargetCalculator(), metrics, new GapReportMapper(nutrientRepository));
     }
 
     @Test
@@ -111,6 +114,7 @@ class GetIntakeGapReportServiceTest {
         assertThat(result.calorieTarget()).isEqualTo(2000.0);
         assertThat(result.nutrientGaps()).hasSize(1);
         verifyNoInteractions(requirementRepository, energyCoefficientRepository);
+        verify(metrics).recordGapReportDuration(any());
     }
 
     @Test
@@ -139,5 +143,6 @@ class GetIntakeGapReportServiceTest {
         assertThat(result.consumedCalories()).isEqualTo(400.0);
         assertThat(result.nutrientGaps()).hasSize(1);
         assertThat(result.nutrientGaps().iterator().next().status()).isEqualTo(NutrientGapStatus.SHORTFALL.name());
+        verify(metrics).recordGapReportDuration(any());
     }
 }

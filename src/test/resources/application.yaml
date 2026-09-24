@@ -13,3 +13,12 @@ app:
     secret: test-secret-not-for-production-use-only-in-tests
     expiration-minutes: 60
     refresh-token-expiration-days: 7
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,loggers,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized

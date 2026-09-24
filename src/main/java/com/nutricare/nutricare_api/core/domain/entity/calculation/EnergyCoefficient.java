@@ -1,5 +1,10 @@
 package com.nutricare.nutricare_api.core.domain.entity.calculation;
 
+import com.nutricare.nutricare_api.core.domain.entity.calculation.formula.CalorieFormulaRegistry;
+import com.nutricare.nutricare_api.core.domain.entity.calculation.spec.AgeInMonthsWithin;
+import com.nutricare.nutricare_api.core.domain.entity.calculation.spec.GroupTypeMatches;
+import com.nutricare.nutricare_api.core.domain.entity.calculation.spec.SexMatches;
+import com.nutricare.nutricare_api.core.domain.entity.calculation.spec.TrimesterMatches;
 import com.nutricare.nutricare_api.core.domain.entity.profile.GroupType;
 import com.nutricare.nutricare_api.core.domain.entity.profile.InvalidTrimesterException;
 import com.nutricare.nutricare_api.core.domain.entity.profile.Profile;
@@ -70,23 +75,15 @@ public class EnergyCoefficient {
     }
 
     public boolean matches(Profile profile) {
-        if (this.groupType != profile.getGroupType()) {
-            return false;
-        } else if (!Objects.equals(this.sexType, profile.getSexType())) {
-            return false;
-        } else if (profile.getAgeInMonths() < this.ageMonthsMin || profile.getAgeInMonths() > this.ageMonthsMax) {
-            return false;
-        } else if (!Objects.equals(this.trimester, profile.getTrimester())) {
-            return false;
-        }
-        return true;
+        return new GroupTypeMatches(groupType)
+                .and(new SexMatches(sexType))
+                .and(new AgeInMonthsWithin(ageMonthsMin, ageMonthsMax))
+                .and(new TrimesterMatches(trimester))
+                .isSatisfiedBy(profile);
     }
 
     public double resolveTarget(Profile profile) {
-        double bmr = weightCoefficient * profile.getWeightKg()
-                + heightCoefficient * profile.getHeightCm()
-                + intercept;
-        return bmr * profile.getActivityLevel().getMultiplier();
+        return CalorieFormulaRegistry.resolve(profile.getGroupType()).dailyCalories(profile, this);
     }
 
     public Integer getId() {

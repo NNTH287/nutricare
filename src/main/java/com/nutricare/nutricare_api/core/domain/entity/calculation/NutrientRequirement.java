@@ -1,5 +1,8 @@
 package com.nutricare.nutricare_api.core.domain.entity.calculation;
 
+import com.nutricare.nutricare_api.core.domain.entity.calculation.spec.AgeInMonthsWithin;
+import com.nutricare.nutricare_api.core.domain.entity.calculation.spec.GroupTypeMatches;
+import com.nutricare.nutricare_api.core.domain.entity.calculation.spec.TrimesterMatches;
 import com.nutricare.nutricare_api.core.domain.entity.profile.InvalidTrimesterException;
 import com.nutricare.nutricare_api.core.domain.entity.profile.Profile;
 import com.nutricare.nutricare_api.core.domain.entity.profile.TrimesterPolicy;
@@ -59,15 +62,10 @@ public class NutrientRequirement {
     }
 
     public boolean matches(Profile profile) {
-        if(this.groupType != profile.getGroupType()) {
-            return false;
-        } else if (profile.getAgeInMonths() < this.ageMonthsMin || profile.getAgeInMonths() > this.getAgeMonthsMax()) {
-            return false;
-        } else if (!Objects.equals(trimester, profile.getTrimester())) {
-            return false;
-        }
-
-        return true;
+        return new GroupTypeMatches(groupType)
+                .and(new AgeInMonthsWithin(ageMonthsMin, ageMonthsMax))
+                .and(new TrimesterMatches(trimester))
+                .isSatisfiedBy(profile);
     }
 
     public Integer getId() {

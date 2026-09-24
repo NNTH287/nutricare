@@ -17,6 +17,8 @@ import static org.assertj.core.api.Assertions.within;
 
 class NutrientTargetCalculatorTest {
 
+    private final NutrientTargetCalculator calculator = new NutrientTargetCalculator();
+
     private static Profile adultProfile(double weightKg, double heightCm, ActivityLevel activityLevel) {
         LocalDateTime now = LocalDateTime.now();
         return Profile.reconstitute(1, 10, "Jane", GroupType.ADULT, SexType.FEMALE,
@@ -28,7 +30,7 @@ class NutrientTargetCalculatorTest {
         Profile profile = adultProfile(60.0, 165.0, ActivityLevel.MODERATE);
         NutrientRequirement matching = NutrientRequirement.create(1, GroupType.ADULT, 5, 0, 1200, 10.0, 20.0);
 
-        NutrientCalculation calculation = NutrientTargetCalculator.calculate(profile, List.of(matching));
+        NutrientCalculation calculation = calculator.calculate(profile, List.of(matching));
 
         assertThat(calculation.getResolvedTargets()).hasSize(1);
         assertThat(calculation.getResolvedTargets().iterator().next().getNutrientId()).isEqualTo(5);
@@ -40,7 +42,7 @@ class NutrientTargetCalculatorTest {
         Profile profile = adultProfile(60.0, 165.0, ActivityLevel.MODERATE);
         NutrientRequirement matching = NutrientRequirement.create(1, GroupType.ADULT, 5, 0, 1200, null, null);
 
-        NutrientCalculation calculation = NutrientTargetCalculator.calculate(profile, List.of(matching));
+        NutrientCalculation calculation = calculator.calculate(profile, List.of(matching));
 
         assertThat(calculation.getResolvedTargets()).isEmpty();
         assertThat(calculation.getUnresolvedTargets()).containsExactly(5);
@@ -51,7 +53,7 @@ class NutrientTargetCalculatorTest {
         Profile profile = adultProfile(60.0, 165.0, ActivityLevel.MODERATE);
         NutrientRequirement nonMatching = NutrientRequirement.create(1, GroupType.ELDERLY, 5, 0, 1200, 10.0, 20.0);
 
-        NutrientCalculation calculation = NutrientTargetCalculator.calculate(profile, List.of(nonMatching));
+        NutrientCalculation calculation = calculator.calculate(profile, List.of(nonMatching));
 
         assertThat(calculation.getResolvedTargets()).isEmpty();
         assertThat(calculation.getUnresolvedTargets()).isEmpty();
@@ -62,7 +64,7 @@ class NutrientTargetCalculatorTest {
         Profile profile = adultProfile(70.0, 175.0, ActivityLevel.SEDENTARY);
         EnergyCoefficient coefficient = EnergyCoefficient.create(1, GroupType.ADULT, SexType.FEMALE, 0, 1200, 10.0, 6.25, 5.0);
 
-        double calorieTarget = NutrientTargetCalculator.resolveCalorieTarget(profile, 1, List.of(coefficient));
+        double calorieTarget = calculator.resolveCalorieTarget(profile, 1, List.of(coefficient));
 
         double expected = (10.0 * 70.0 + 6.25 * 175.0 + 5.0) * ActivityLevel.SEDENTARY.getMultiplier();
         assertThat(calorieTarget).isCloseTo(expected, within(0.001));
@@ -73,7 +75,7 @@ class NutrientTargetCalculatorTest {
         Profile profile = adultProfile(70.0, 175.0, ActivityLevel.SEDENTARY);
         EnergyCoefficient nonMatching = EnergyCoefficient.create(1, GroupType.ELDERLY, SexType.FEMALE, 0, 1200, 10.0, 6.25, 5.0);
 
-        assertThatThrownBy(() -> NutrientTargetCalculator.resolveCalorieTarget(profile, 1, List.of(nonMatching)))
+        assertThatThrownBy(() -> calculator.resolveCalorieTarget(profile, 1, List.of(nonMatching)))
                 .isInstanceOf(UnresolvableCalorieTargetException.class);
     }
 }

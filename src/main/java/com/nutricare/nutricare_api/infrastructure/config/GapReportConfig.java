@@ -4,6 +4,7 @@ import com.nutricare.nutricare_api.core.application.mapper.GapReportMapper;
 import com.nutricare.nutricare_api.core.application.port.in.GetIntakeGapReportUseCase;
 import com.nutricare.nutricare_api.core.application.port.out.*;
 import com.nutricare.nutricare_api.core.application.service.GetIntakeGapReportService;
+import com.nutricare.nutricare_api.core.domain.entity.calculation.NutrientTargetCalculator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -24,9 +25,10 @@ public class GapReportConfig {
                                                                  EnergyCoefficientRepository energyCoefficientRepository,
                                                                  NutrientRepository nutrientRepository,
                                                                  CalculationResultRepository calculationResultRepository,
+                                                                 NutrientTargetCalculator nutrientTargetCalculator,
                                                                  GapReportMapper gapReportMapper) {
         return new GetIntakeGapReportService(profileRepository, standardRepository, intakeLogRepository,
                 foodItemRepository, requirementRepository, energyCoefficientRepository, nutrientRepository,
-                calculationResultRepository, gapReportMapper);
+                calculationResultRepository, nutrientTargetCalculator, gapReportMapper);
     }
 }

@@ -31,6 +31,7 @@ public class GetIntakeGapReportService implements GetIntakeGapReportUseCase {
     private final EnergyCoefficientRepository energyCoefficientRepository;
     private final NutrientRepository nutrientRepository;
     private final CalculationResultRepository calculationResultRepository;
+    private final NutrientTargetCalculator nutrientTargetCalculator;
     private final GapReportMapper mapper;
 
     public GetIntakeGapReportService(ProfileRepository profileRepository,
@@ -41,6 +42,7 @@ public class GetIntakeGapReportService implements GetIntakeGapReportUseCase {
                                       EnergyCoefficientRepository energyCoefficientRepository,
                                       NutrientRepository nutrientRepository,
                                       CalculationResultRepository calculationResultRepository,
+                                      NutrientTargetCalculator nutrientTargetCalculator,
                                       GapReportMapper mapper) {
         this.profileRepository = profileRepository;
         this.standardRepository = standardRepository;
@@ -50,6 +52,7 @@ public class GetIntakeGapReportService implements GetIntakeGapReportUseCase {
         this.energyCoefficientRepository = energyCoefficientRepository;
         this.nutrientRepository = nutrientRepository;
         this.calculationResultRepository = calculationResultRepository;
+        this.nutrientTargetCalculator = nutrientTargetCalculator;
         this.mapper = mapper;
     }
 
@@ -85,10 +88,10 @@ public class GetIntakeGapReportService implements GetIntakeGapReportUseCase {
         }
 
         List<NutrientRequirement> requirements = requirementRepository.findByStandard(standard.getId());
-        NutrientCalculation calculation = NutrientTargetCalculator.calculate(profile, requirements);
+        NutrientCalculation calculation = nutrientTargetCalculator.calculate(profile, requirements);
 
         List<EnergyCoefficient> energyCoefficients = energyCoefficientRepository.findByStandard(standard.getId());
-        double calorieTarget = NutrientTargetCalculator.resolveCalorieTarget(profile, standard.getId(), energyCoefficients);
+        double calorieTarget = nutrientTargetCalculator.resolveCalorieTarget(profile, standard.getId(), energyCoefficients);
 
         return new NutrientTargets(calculation.getResolvedTargets(), calculation.getUnresolvedTargets(), calorieTarget);
     }

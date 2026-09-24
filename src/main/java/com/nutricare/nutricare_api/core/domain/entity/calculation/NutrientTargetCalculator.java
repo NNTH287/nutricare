@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 public class NutrientTargetCalculator {
-    public static NutrientCalculation calculate(Profile profile, List<NutrientRequirement> requirements) {
+    public NutrientCalculation calculate(Profile profile, List<NutrientRequirement> requirements) {
         Set<NutrientTarget> resolved = new HashSet<>();
         Set<Integer> unresolved = new HashSet<>();
         for (var r : requirements) {
@@ -22,7 +22,7 @@ public class NutrientTargetCalculator {
         return new NutrientCalculation(resolved, unresolved);
     }
 
-    public static double resolveCalorieTarget(Profile profile, Integer standardId, List<EnergyCoefficient> coefficients) {
+    public double resolveCalorieTarget(Profile profile, Integer standardId, List<EnergyCoefficient> coefficients) {
         return coefficients.stream()
                 .filter(c -> c.matches(profile))
                 .findFirst()

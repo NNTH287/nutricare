@@ -6,6 +6,7 @@ import com.nutricare.nutricare_api.core.application.port.out.*;
 import com.nutricare.nutricare_api.core.domain.entity.calculation.CalculationResult;
 import com.nutricare.nutricare_api.core.domain.entity.calculation.EnergyCoefficient;
 import com.nutricare.nutricare_api.core.domain.entity.calculation.NutrientRequirement;
+import com.nutricare.nutricare_api.core.domain.entity.calculation.NutrientTargetCalculator;
 import com.nutricare.nutricare_api.core.domain.entity.calculation.NutritionStandard;
 import com.nutricare.nutricare_api.core.domain.entity.fooditem.Nutrient;
 import com.nutricare.nutricare_api.core.domain.entity.profile.*;
@@ -58,7 +59,7 @@ class CalculateNutrientServiceTest {
     @BeforeEach
     void setUp() {
         service = new CalculateNutrientService(requirementRepository, energyCoefficientRepository,
-                standardRepository, profileRepository, calculationResultRepository,
+                standardRepository, profileRepository, calculationResultRepository, new NutrientTargetCalculator(),
                 new CalculationResultMapper(standardRepository, nutrientRepository));
     }
 

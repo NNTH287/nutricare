@@ -73,7 +73,7 @@ class GetIntakeGapReportServiceTest {
     void setUp() {
         service = new GetIntakeGapReportService(profileRepository, standardRepository, intakeLogRepository,
                 foodItemRepository, requirementRepository, energyCoefficientRepository, nutrientRepository,
-                calculationResultRepository, new GapReportMapper(nutrientRepository));
+                calculationResultRepository, new NutrientTargetCalculator(), new GapReportMapper(nutrientRepository));
     }
 
     @Test

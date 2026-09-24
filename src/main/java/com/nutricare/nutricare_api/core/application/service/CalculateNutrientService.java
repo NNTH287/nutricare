@@ -15,6 +15,7 @@ public class CalculateNutrientService implements CalculateNutrientUseCase {
     private final NutritionStandardRepository standardRepository;
     private final ProfileRepository profileRepository;
     private final CalculationResultRepository calculationResultRepository;
+    private final NutrientTargetCalculator nutrientTargetCalculator;
     private final CalculationResultMapper mapper;
 
     public CalculateNutrientService(NutrientRequirementRepository requirementRepository,
@@ -22,12 +23,14 @@ public class CalculateNutrientService implements CalculateNutrientUseCase {
                                     NutritionStandardRepository standardRepository,
                                     ProfileRepository profileRepository,
                                     CalculationResultRepository calculationResultRepository,
+                                    NutrientTargetCalculator nutrientTargetCalculator,
                                     CalculationResultMapper mapper) {
         this.requirementRepository = requirementRepository;
         this.energyCoefficientRepository = energyCoefficientRepository;
         this.standardRepository = standardRepository;
         this.profileRepository = profileRepository;
         this.calculationResultRepository = calculationResultRepository;
+        this.nutrientTargetCalculator = nutrientTargetCalculator;
         this.mapper = mapper;
     }
 
@@ -49,8 +52,8 @@ public class CalculateNutrientService implements CalculateNutrientUseCase {
         List<NutrientRequirement> requirements = requirementRepository.findByStandard(standard.getId());
         List<EnergyCoefficient> energyCoefficients = energyCoefficientRepository.findByStandard(standard.getId());
 
-        NutrientCalculation nutrientCalculation = NutrientTargetCalculator.calculate(profile, requirements);
-        double calorieTarget = NutrientTargetCalculator.resolveCalorieTarget(profile, standard.getId(), energyCoefficients);
+        NutrientCalculation nutrientCalculation = nutrientTargetCalculator.calculate(profile, requirements);
+        double calorieTarget = nutrientTargetCalculator.resolveCalorieTarget(profile, standard.getId(), energyCoefficients);
 
         return CalculationResult.create(profile.getId(), standard.getId(), calorieTarget,
                 nutrientCalculation.getResolvedTargets(), nutrientCalculation.getUnresolvedTargets());

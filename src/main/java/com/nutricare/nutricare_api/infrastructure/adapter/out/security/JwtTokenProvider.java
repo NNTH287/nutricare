@@ -19,6 +19,7 @@ import java.util.Optional;
 public class JwtTokenProvider implements TokenIssuer {
     private static final String CLAIM_EMAIL = "email";
     private static final String CLAIM_ROLE = "role";
+    private static final String CLAIM_TYPE = "type";
 
     private final SecretKey key;
     private final long expirationMillis;
@@ -36,20 +37,25 @@ public class JwtTokenProvider implements TokenIssuer {
                 .subject(userId.toString())
                 .claim(CLAIM_EMAIL, email)
                 .claim(CLAIM_ROLE, role.name())
+                .claim(CLAIM_TYPE, TokenType.ACCESS.name())
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plusMillis(expirationMillis)))
                 .signWith(key)
                 .compact();
     }
 
-    public Optional<TokenClaims> validateAndParse(String token) {
+    public Optional<TokenClaims> validateAndParse(String token, TokenType expectedType) {
         try {
             Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+            TokenType type = TokenType.valueOf(claims.get(CLAIM_TYPE, String.class));
+            if (type != expectedType) {
+                return Optional.empty();
+            }
             Integer userId = Integer.valueOf(claims.getSubject());
             String email = claims.get(CLAIM_EMAIL, String.class);
             Role role = Role.valueOf(claims.get(CLAIM_ROLE, String.class));
-            return Optional.of(new TokenClaims(userId, email, role));
-        } catch (JwtException | IllegalArgumentException e) {
+            return Optional.of(new TokenClaims(userId, email, role, type));
+        } catch (JwtException | IllegalArgumentException | NullPointerException e) {
             return Optional.empty();
         }
     }

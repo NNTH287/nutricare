@@ -2,6 +2,7 @@ package com.nutricare.nutricare_api.infrastructure.adapter.in.web.security;
 
 import com.nutricare.nutricare_api.infrastructure.adapter.out.security.JwtTokenProvider;
 import com.nutricare.nutricare_api.infrastructure.adapter.out.security.TokenClaims;
+import com.nutricare.nutricare_api.infrastructure.adapter.out.security.TokenType;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,7 +29,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         extractToken(request)
-                .flatMap(tokenProvider::validateAndParse)
+                .flatMap(token -> tokenProvider.validateAndParse(token, TokenType.ACCESS))
                 .ifPresent(this::authenticate);
 
         filterChain.doFilter(request, response);

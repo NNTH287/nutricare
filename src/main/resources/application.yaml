@@ -1,6 +1,23 @@
 spring:
   application:
     name: nutricare-api
+  config:
+    import: optional:file:.env[.properties]
+  flyway:
+    locations: classpath:db/migration
+
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration-minutes: ${JWT_EXPIRATION_MINUTES:60}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  flyway:
+    locations: classpath:db/migration,classpath:db/migration-dev
 
 ---
 spring:
@@ -14,5 +31,3 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
-  flyway:
-    locations: classpath:db/migration

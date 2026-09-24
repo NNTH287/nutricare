@@ -12,5 +12,6 @@ public interface AuthWebMapper {
     @Mapping(target = "rawPassword", source = "password")
     RegisterUserCommand toRegisterCommand(RegisterRequest request);
 
+    @Mapping(target = "token", source = "accessToken")
     AuthResponse toResponse(AuthenticatedUserResult result);
 }

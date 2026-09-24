@@ -9,15 +9,6 @@ import org.springframework.transaction.interceptor.TransactionInterceptor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Only {@link CalculationController} and {@link GapReportController} have a genuine need for a
- * transaction boundary: each combines several independent reads that must reflect one snapshot,
- * which only an elevated isolation level actually provides. Every other controller method makes
- * at most one persistence write, which Spring Data already wraps in its own transaction, so
- * wrapping the controller method again adds nothing. This test locks in that decision on both
- * sides — it fails if the boundary quietly disappears from where it matters, and it fails if
- * {@code @Transactional} quietly reappears somewhere it doesn't.
- */
 @SpringBootTest
 class ControllerTransactionWiringTest {
 
@@ -40,14 +31,14 @@ class ControllerTransactionWiringTest {
     private NutrientController nutrientController;
 
     @Test
-    void calculationAndGapReportControllersCarryTransactionAdvice() {
+    void multiWriteAndMultiReadControllersCarryTransactionAdvice() {
+        assertTransactional(authenticationController);
         assertTransactional(calculationController);
         assertTransactional(gapReportController);
     }
 
     @Test
     void everyOtherControllerCarriesNoTransactionAdvice() {
-        assertNotTransactional(authenticationController);
         assertNotTransactional(foodItemController);
         assertNotTransactional(intakeLoggingController);
         assertNotTransactional(nutrientController);

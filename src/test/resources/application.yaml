@@ -3,7 +3,7 @@ spring:
     url: jdbc:h2:mem:nutricare;MODE=PostgreSQL
   flyway:
     locations: classpath:db/migration
-    target: "2"
+    target: "2.1"
   jpa:
     hibernate:
       ddl-auto: validate
@@ -12,3 +12,4 @@ app:
   jwt:
     secret: test-secret-not-for-production-use-only-in-tests
     expiration-minutes: 60
+    refresh-token-expiration-days: 7

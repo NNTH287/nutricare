@@ -6,6 +6,7 @@ import com.nutricare.nutricare_api.infrastructure.adapter.out.persistence.mapper
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,5 +30,10 @@ public class RefreshTokenRepositoryAdapter implements RefreshTokenRepository {
     @Override
     public List<RefreshToken> findActiveByUserId(Integer userId) {
         return repository.findByUserIdAndRevokedAtIsNull(userId).stream().map(mapper::toDomain).toList();
+    }
+
+    @Override
+    public void deleteExpiredBefore(LocalDateTime cutoff) {
+        repository.deleteByExpiresAtBefore(cutoff);
     }
 }

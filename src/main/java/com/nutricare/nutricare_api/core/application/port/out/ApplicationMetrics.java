@@ -6,4 +6,6 @@ public interface ApplicationMetrics {
     void recordGapReportDuration(Duration duration);
 
     void recordLoginFailure(String reason);
+
+    void recordIntakeEntryLogged();
 }

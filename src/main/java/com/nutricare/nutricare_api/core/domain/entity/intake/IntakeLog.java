@@ -1,7 +1,10 @@
 package com.nutricare.nutricare_api.core.domain.entity.intake;
 
 import com.nutricare.nutricare_api.core.domain.entity.menu.MealSlot;
+import com.nutricare.nutricare_api.core.domain.event.DomainEvent;
+import com.nutricare.nutricare_api.core.domain.event.IntakeEntryLogged;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,6 +16,7 @@ public class IntakeLog {
     private Integer profileId;
     private LocalDate logDate;
     private List<IntakeEntry> entries;
+    private final List<DomainEvent> domainEvents = new ArrayList<>();
 
     public static IntakeLog create(Integer profileId, LocalDate logDate) {
         return new IntakeLog(null, profileId, logDate, new ArrayList<>());
@@ -57,6 +61,7 @@ public class IntakeLog {
     public IntakeEntry addEntry(Integer foodItemId, Double quantityG, MealSlot mealSlot) {
         IntakeEntry entry = IntakeEntry.create(foodItemId, quantityG, mealSlot);
         entries.add(entry);
+        domainEvents.add(new IntakeEntryLogged(profileId, foodItemId, quantityG, logDate, Instant.now()));
         return entry;
     }
 
@@ -77,6 +82,12 @@ public class IntakeLog {
                 .filter(e -> Objects.equals(e.getId(), entryId))
                 .findFirst()
                 .orElseThrow(() -> new InvalidIntakeLogException("entry does not exist"));
+    }
+
+    public List<DomainEvent> pullDomainEvents() {
+        List<DomainEvent> pulled = List.copyOf(domainEvents);
+        domainEvents.clear();
+        return pulled;
     }
 
     @Override

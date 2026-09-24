@@ -3,6 +3,7 @@ package com.nutricare.nutricare_api.core.application.service;
 import com.nutricare.nutricare_api.core.application.dto.*;
 import com.nutricare.nutricare_api.core.application.mapper.IntakeLoggingMapper;
 import com.nutricare.nutricare_api.core.application.port.in.LogIntakeUseCase;
+import com.nutricare.nutricare_api.core.application.port.out.DomainEventPublisher;
 import com.nutricare.nutricare_api.core.application.port.out.IntakeLogRepository;
 import com.nutricare.nutricare_api.core.application.port.out.ProfileRepository;
 import com.nutricare.nutricare_api.core.domain.entity.intake.IntakeEntry;
@@ -16,11 +17,14 @@ import java.util.Optional;
 public class LogIntakeService implements LogIntakeUseCase {
     private final IntakeLogRepository intakeLogRepository;
     private final ProfileRepository profileRepository;
+    private final DomainEventPublisher domainEventPublisher;
     private final IntakeLoggingMapper mapper;
 
-    public LogIntakeService(IntakeLogRepository intakeLogRepository, ProfileRepository profileRepository, IntakeLoggingMapper mapper) {
+    public LogIntakeService(IntakeLogRepository intakeLogRepository, ProfileRepository profileRepository,
+                             DomainEventPublisher domainEventPublisher, IntakeLoggingMapper mapper) {
         this.intakeLogRepository = intakeLogRepository;
         this.profileRepository = profileRepository;
+        this.domainEventPublisher = domainEventPublisher;
         this.mapper = mapper;
     }
 
@@ -67,6 +71,7 @@ public class LogIntakeService implements LogIntakeUseCase {
         verifyProfileOwnedBy(intakeLog.getProfileId(), authenticatedUserId);
         IntakeEntry newEntry = intakeLog.addEntry(command.foodItemId(), command.quantityG(), command.mealSlot());
         intakeLogRepository.save(intakeLog);
+        domainEventPublisher.publish(intakeLog.pullDomainEvents());
 
         return mapper.toEntryResult(newEntry);
     }

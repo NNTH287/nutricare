@@ -21,4 +21,9 @@ public class MicrometerApplicationMetrics implements ApplicationMetrics {
     public void recordLoginFailure(String reason) {
         registry.counter("nutricare.auth.login.failure", "reason", reason).increment();
     }
+
+    @Override
+    public void recordIntakeEntryLogged() {
+        registry.counter("nutricare.intake.entries.logged").increment();
+    }
 }

@@ -2,6 +2,7 @@ package com.nutricare.nutricare_api.infrastructure.config;
 
 import com.nutricare.nutricare_api.core.application.mapper.IntakeLoggingMapper;
 import com.nutricare.nutricare_api.core.application.port.in.LogIntakeUseCase;
+import com.nutricare.nutricare_api.core.application.port.out.DomainEventPublisher;
 import com.nutricare.nutricare_api.core.application.port.out.IntakeLogRepository;
 import com.nutricare.nutricare_api.core.application.port.out.ProfileRepository;
 import com.nutricare.nutricare_api.core.application.service.LogIntakeService;
@@ -17,7 +18,8 @@ public class IntakeLoggingConfig {
     }
 
     @Bean
-    public LogIntakeUseCase logIntakeUseCase(IntakeLogRepository intakeLogRepository, ProfileRepository profileRepository, IntakeLoggingMapper intakeLoggingMapper) {
-        return new LogIntakeService(intakeLogRepository, profileRepository, intakeLoggingMapper);
+    public LogIntakeUseCase logIntakeUseCase(IntakeLogRepository intakeLogRepository, ProfileRepository profileRepository,
+                                              DomainEventPublisher domainEventPublisher, IntakeLoggingMapper intakeLoggingMapper) {
+        return new LogIntakeService(intakeLogRepository, profileRepository, domainEventPublisher, intakeLoggingMapper);
     }
 }

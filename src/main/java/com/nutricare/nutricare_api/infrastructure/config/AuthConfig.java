@@ -1,6 +1,7 @@
 package com.nutricare.nutricare_api.infrastructure.config;
 
 import com.nutricare.nutricare_api.core.application.port.in.AuthenticateUserUseCase;
+import com.nutricare.nutricare_api.core.application.port.in.PurgeExpiredRefreshTokensUseCase;
 import com.nutricare.nutricare_api.core.application.port.in.RefreshTokenUseCase;
 import com.nutricare.nutricare_api.core.application.port.in.RegisterUserUseCase;
 import com.nutricare.nutricare_api.core.application.port.out.ApplicationMetrics;
@@ -9,6 +10,7 @@ import com.nutricare.nutricare_api.core.application.port.out.RefreshTokenReposit
 import com.nutricare.nutricare_api.core.application.port.out.TokenIssuer;
 import com.nutricare.nutricare_api.core.application.port.out.UserRepository;
 import com.nutricare.nutricare_api.core.application.service.AuthenticateUserService;
+import com.nutricare.nutricare_api.core.application.service.PurgeExpiredRefreshTokensService;
 import com.nutricare.nutricare_api.core.application.service.RefreshTokenService;
 import com.nutricare.nutricare_api.core.application.service.RegisterUserService;
 import org.springframework.context.annotation.Bean;
@@ -34,5 +36,10 @@ public class AuthConfig {
     public RefreshTokenUseCase refreshTokenUseCase(RefreshTokenRepository refreshTokenRepository, UserRepository userRepository,
                                                      TokenIssuer tokenIssuer) {
         return new RefreshTokenService(refreshTokenRepository, userRepository, tokenIssuer);
+    }
+
+    @Bean
+    public PurgeExpiredRefreshTokensUseCase purgeExpiredRefreshTokensUseCase(RefreshTokenRepository refreshTokenRepository) {
+        return new PurgeExpiredRefreshTokensService(refreshTokenRepository);
     }
 }

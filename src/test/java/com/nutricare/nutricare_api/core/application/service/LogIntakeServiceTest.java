@@ -5,19 +5,24 @@ import com.nutricare.nutricare_api.core.application.dto.IntakeEntryResult;
 import com.nutricare.nutricare_api.core.application.dto.IntakeLogHeaderResult;
 import com.nutricare.nutricare_api.core.application.dto.UpdateIntakeEntryCommand;
 import com.nutricare.nutricare_api.core.application.mapper.IntakeLoggingMapper;
+import com.nutricare.nutricare_api.core.application.port.out.DomainEventPublisher;
 import com.nutricare.nutricare_api.core.application.port.out.IntakeLogRepository;
 import com.nutricare.nutricare_api.core.application.port.out.ProfileRepository;
 import com.nutricare.nutricare_api.core.domain.entity.intake.IntakeLog;
 import com.nutricare.nutricare_api.core.domain.entity.menu.MealSlot;
 import com.nutricare.nutricare_api.core.domain.entity.profile.*;
+import com.nutricare.nutricare_api.core.domain.event.DomainEvent;
+import com.nutricare.nutricare_api.core.domain.event.IntakeEntryLogged;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -35,6 +40,9 @@ class LogIntakeServiceTest {
     @Mock
     private ProfileRepository profileRepository;
 
+    @Mock
+    private DomainEventPublisher domainEventPublisher;
+
     private LogIntakeService service;
 
     private static Profile ownedProfile(Integer id, Integer userId) {
@@ -45,7 +53,7 @@ class LogIntakeServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new LogIntakeService(intakeLogRepository, profileRepository, new IntakeLoggingMapper());
+        service = new LogIntakeService(intakeLogRepository, profileRepository, domainEventPublisher, new IntakeLoggingMapper());
     }
 
     @Test
@@ -110,6 +118,14 @@ class LogIntakeServiceTest {
         assertThat(result.foodItemId()).isEqualTo(5);
         assertThat(result.quantityG()).isEqualTo(100.0);
         verify(intakeLogRepository).save(log);
+
+        ArgumentCaptor<List<DomainEvent>> eventsCaptor = ArgumentCaptor.forClass(List.class);
+        verify(domainEventPublisher).publish(eventsCaptor.capture());
+        assertThat(eventsCaptor.getValue()).hasSize(1);
+        assertThat(eventsCaptor.getValue().get(0)).isInstanceOf(IntakeEntryLogged.class);
+        IntakeEntryLogged event = (IntakeEntryLogged) eventsCaptor.getValue().get(0);
+        assertThat(event.foodItemId()).isEqualTo(5);
+        assertThat(event.quantityG()).isEqualTo(100.0);
     }
 
     @Test

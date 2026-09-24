@@ -89,4 +89,30 @@ class RefreshTokenRepositoryAdapterTest {
 
         assertThat(found).extracting(RefreshToken::getJti).containsExactly(active.getJti());
     }
+
+    @Test
+    void givenTokensExpiredAndNotYetExpired_whenDeleteExpiredBeforeIsCalled_thenOnlyExpiredOnesAreRemoved() {
+        LocalDateTime now = LocalDateTime.now();
+        RefreshToken expired = RefreshToken.issue(UUID.randomUUID(), userId, now.minusDays(10), now.minusDays(1));
+        RefreshToken stillValid = RefreshToken.issue(UUID.randomUUID(), userId, now, now.plusDays(7));
+        adapter.save(expired);
+        adapter.save(stillValid);
+
+        adapter.deleteExpiredBefore(now);
+
+        assertThat(adapter.findByJti(expired.getJti())).isEmpty();
+        assertThat(adapter.findByJti(stillValid.getJti())).isPresent();
+    }
+
+    @Test
+    void givenRevokedButNotYetExpiredToken_whenDeleteExpiredBeforeIsCalled_thenItIsNotRemoved() {
+        LocalDateTime now = LocalDateTime.now();
+        RefreshToken revokedButValid = RefreshToken.issue(UUID.randomUUID(), userId, now, now.plusDays(7));
+        revokedButValid.revoke(now, null);
+        adapter.save(revokedButValid);
+
+        adapter.deleteExpiredBefore(now);
+
+        assertThat(adapter.findByJti(revokedButValid.getJti())).isPresent();
+    }
 }
